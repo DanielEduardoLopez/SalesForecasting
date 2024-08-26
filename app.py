@@ -12,9 +12,11 @@ Time Series Analyses for forecasting Walmart net sales over the next 10 years in
 # Libraries importation
 import numpy as np
 import pandas as pd
-import pickle
+from statsmodels.iolib.smpickle import load_pickle
+from statsmodels.tsa.statespace.sarimax import SARIMAX, SARIMAXResults
 import streamlit as st
 import plotly.express as px
+
 
 # Page configuration
 st.set_page_config(
@@ -32,7 +34,34 @@ st.set_page_config(
 
 
 # Functions
+def get_model():
+    model = SARIMAXResults.load("sarima_model.pickle")
+    #model = load_pickle("sarima_model.pickle")
+    return model
 
+def get_hist_data():
+    link = 'https://raw.githubusercontent.com/DanielEduardoLopez/SalesForecasting/main/dataset_processed.csv'
+    df = pd.read_csv(link)\
+        .drop(columns=['units','gdp','walmex','sp500','ipc','exchange_rates','interest_rates']).set_index('Date')
+    return df
+
+def get_forecast(model, periods):
+    preds = model.forecast(start=periods)
+
+
+def extend_model(model, new_observations, historical):
+    last_date = str(historical.index[-1])
+    periods = len(new_observations)
+    new_index = pd.period_range(start=last_date, periods=periods, freq='Q')
+    new_observations = pd.Series(new_observations, index=new_index)
+    model = model.extend(endog=new_observations)
+    return model
+
+
+def plot_chart(historical, forecasts):
+    fig = px.line(df, x=historical.index, y=historical.net_sales, title='WALMEX Net Sales Forecast')
+    fig = px.line(df, x=forecasts.index, y=forecasts.net_sales, title='WALMEX Net Sales Forecast')
+    fig.show()
 
 
 
@@ -84,10 +113,10 @@ if page == "Homepage":
 
     with col2:
         st.markdown('##### :blue[Daniel Eduardo López]')
-        html_contact = '<a href="https://github.com/DanielEduardoLopez">GitHub</a> | <a href="https://www.linkedin.com/in/daniel-eduardo-lopez">LinkedIn</a>'
+        html_contact = '<a href="https://www.linkedin.com/in/daniel-eduardo-lopez">LinkedIn</a> | <a href="https://github.com/DanielEduardoLopez">GitHub</a>'
         st.caption(html_contact, unsafe_allow_html=True)
 
-    st.markdown("August 22, 2024")
+    st.markdown("August 26, 2024")
     st.caption("5 min read")
     st.image("sales-figures-1473495.jpg")
     html_picture = '<p style="font-size: 12px" align="center">Image Credit: <a href="https://www.freeimages.com/es/photo/sales-figures-1473495/">wagg66</a> from <a href="https://www.freeimages.com/">FreeImages</a>.</p>'
@@ -115,8 +144,8 @@ if page == "Homepage":
     st.markdown("- Vector Autoregressive (VAR) model")
     st.markdown("- Vector Autoregressive Moving Average (VARMA) model")
     st.markdown("- Vector Autoregressive Integrated Moving Average (VARIMA) model")
-    st.markdown("- Random Forests model")
-    st.markdown("- Support Vector Regression model")
+    st.markdown("- Random Forests (RF) model")
+    st.markdown("- Support Vector Regression (SVR) model")
     st.markdown("All the models were fit using a training set with 80% of the data, and assessed using a testing set with the remaining 20% of the data. The scores **Root Mean Squared Error (RMSE)**, the **Mean Absolute Error (MAE)**, and **Coefficient of Determination** $(r^{2})$ were used for model assessment.")
     url_repository = "https://github.com/DanielEduardoLopez/SalesForecasting"
     st.write("All the technical details can be found at [GitHub](%s)." % url_repository)
@@ -133,8 +162,7 @@ if page == "Homepage":
 
     with bcol2:
         if st.button('Go to Forecast Page'):
-            st.session_state["app_page"] = "Forecast"
-            st.rerun()
+            st.session_state["app_page"] = "Forecast"            
 
     st.markdown("")
 
@@ -156,7 +184,7 @@ elif page == "Forecast":
     with bcol2:
         if st.button('Go to Homepage'):
             st.session_state["app_page"] = "Homepage"
-            st.rerun()
+               
 
     # Input data section
     st.markdown("")
