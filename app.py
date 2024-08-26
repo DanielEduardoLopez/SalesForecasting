@@ -54,7 +54,7 @@ st.title("Sales Forecasting for Walmart in Mexico")
 
 # Defining page to display
 if "app_page" not in st.session_state:
-    page = "Forecast"
+    page = "Homepage"
 else:
     page = st.session_state["app_page"]
 
@@ -69,10 +69,9 @@ with col1:
     st.image("Picture.jpg")
 
 with col2:
-    st.markdown("Hi! I'm Eduardo, engineer specialized in data science. The thing I enjoy the most is working with data and people.  ")
+    st.markdown("Hi! I'm Eduardo, senior data analyst at AstraZeneca. I love learning, and this is a personal project to play with time series analysis. :computer:")
 
-st.sidebar.markdown("I love learning, and this is a personal project to play time series analysis. :computer:")
-st.sidebar.markdown("Please don't take the predictions from this app so seriously.")
+st.sidebar.markdown("")
 
 # Homepage
 if page == "Homepage":
@@ -101,16 +100,33 @@ if page == "Homepage":
     st.markdown("Univariate time series is the most used approach when analyzing time series (Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023), by means of models such as Moving Average (MA), Autoregressive Moving Average (ARMA), Autoregressive Integrated Moving Average (ARIMA), or Simple Exponential Smoothing; which solely depend on the time and the variable under study.")
     st.markdown("On the other hand, it is also possible to forecast time series using regression-based modeling, in which other variables or features are used to predict the response variable (Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023). This approach could have the advantage of quantifying the impact of the external economic indicators in the performance of an organization.")
     st.markdown("In the case of Mexico, it is possible to collect public data from different government offices such as INEGI or BANXICO, or from international sources such as the S&P500, and to assess how they correlate to revenue.")
-    st.markdown("In this context, it is desirable to explore both approaches to predict WALMEX net sales over the next years. Thus, the purpose of the present project is to forecast WALMEX net sales and, then, use that information to predict whether WALMEX will be able to achieve its long-term goal of doubling its sales within the next ten years.")
+    st.markdown("In this context, it is desirable to explore both approaches to predict WALMEX net sales over the next years. Thus, the purpose of the present project was to forecast WALMEX net sales and, then, use that information to predict whether WALMEX will be able to achieve its long-term goal of doubling its sales within the next ten years.")
+    st.markdown("To do so, several univariate, multivariate time series and regression models were built using Python 3 and its libraries Statsmodels, Prophet, Darts, and Scikit-learn:")
+    st.markdown("- Moving Average (MA) model")
+    st.markdown("- Autoregressive (AR) model")
+    st.markdown("- A series of Autoregressive (AR) models with Additive Decomposition")
+    st.markdown("- Autoregressive Moving Average (ARMA) model")
+    st.markdown("- Autoregressive Integrated Moving Average (ARIMA) model")
+    st.markdown("- Seasonal Autoregressive Integrated Moving Average (SARIMA) model")
+    st.markdown("- Seasonal Autoregressive Integrated Moving Average with Exogenous Variables (SARIMAX) model")
+    st.markdown("- Simple Exponential Smoothing (SES) model")
+    st.markdown("- Holt-Winters (HW) model")
+    st.markdown("- Prophet Univariate Time Series Modeling")
+    st.markdown("- Vector Autoregressive (VAR) model")
+    st.markdown("- Vector Autoregressive Moving Average (VARMA) model")
+    st.markdown("- Vector Autoregressive Integrated Moving Average (VARIMA) model")
+    st.markdown("- Random Forests model")
+    st.markdown("- Support Vector Regression model")
+    st.markdown("All the models were fit using a training set with 80% of the data, and assessed using a testing set with the remaining 20% of the data. The scores **Root Mean Squared Error (RMSE)**, the **Mean Absolute Error (MAE)**, and **Coefficient of Determination** $(r^{2})$ were used for model assessment.")
+    url_repository = "https://github.com/DanielEduardoLopez/SalesForecasting"
+    st.write("All the technical details can be found at [GitHub](%s)." % url_repository)
     st.markdown("")
 
     # Model brief description
-    st.subheader(":blue[Model]")
-    st.markdown("Based on all the models fitted, :blue[**a $\text{SARIMA}(1,1,1)(1,1,1)_{4}$ model**] was built and trained using Python and statsmodels, achieving about **2675.576** of **RMSE**, about *2372.531** of **MAE**, and a **R^2** of about **0.983**.")
-    url_repository = "https://github.com/DanielEduardoLopez/SalesForecasting"
-    st.write("All the technical details can be found at [GitHub](%s)." % url_repository)
-    st.markdown("Thus, the resulting model had a good performance. Please don't take its predictions so seriously :wink:")
-    st.markdown("According to the developed model, **Walmart of Mexico (WALMEX) will meet its goal of doubling its sales from 211,436 mdp to 424,050 mdp in the third quarter of 2033**.")
+    st.subheader(":blue[Best Model]")
+    st.markdown("Based on all the models fitted, the :blue[**$\t{SARIMA}(1,1,1)(1,1,1)_{4}$ model**] exhibited the best performance, achieving about **2675.576** of **RMSE**, about **2372.531** of **MAE**, and a $r^{2}$ of about **0.983**.")
+    st.markdown("Thus, the resulting model had a good performance overall, outmatching the multivariate/regression approaches.")
+    st.markdown("According to the results from this study, **Walmart of Mexico (WALMEX) will meet its goal of doubling its sales from 211,436 mdp to 424,050 mdp in the third quarter of 2033**.")
     st.markdown('Please go the :orange[**_Forecast_**] page to play with the model. :blush:')
 
     bcol1, bcol2, bcol3 = st.columns([1, 1, 1])
@@ -118,7 +134,7 @@ if page == "Homepage":
     with bcol2:
         if st.button('Go to Forecast Page'):
             st.session_state["app_page"] = "Forecast"
-            st.experimental_rerun()
+            st.rerun()
 
     st.markdown("")
 
@@ -133,18 +149,18 @@ elif page == "Forecast":
 
     # Brief description of the app
     url_repository = "https://github.com/DanielEduardoLopez/SalesForecasting"
-    st.write('Uses a $\text{SARIMA}(1,1,1)(1,1,1)_{4}$ trained on the historical net sales data of WALMEX (Wal-Mart de México S.A.B. de C.V., 2024) from 2014Q1 to 2023Q4 to forecast net sales over the next 10 years. Check out the code [here](%s) and more details at the <h style="color:orange;"><i><b>Homepage</b></i></h>. Please do not take the predictions from this app so seriously. 😉' % url_repository, unsafe_allow_html=True)
+    st.write('Uses a $\t{SARIMA}(1,1,1)(1,1,1)_{4}$ model trained on the historical net sales data of WALMEX (Wal-Mart de México S.A.B. de C.V., 2024) from 2014Q1 to 2023Q4 to forecast net sales over the next 10 years. Check out the code [here](%s) and more details at the <h style="color:orange;"><i><b>Homepage</b></i></h>. Please do not take the predictions from this app so seriously. 😉' % url_repository, unsafe_allow_html=True)
 
     bcol1, bcol2, bcol3 = st.columns([1, 1, 1])
 
     with bcol2:
         if st.button('Go to Homepage'):
             st.session_state["app_page"] = "Homepage"
-            st.experimental_rerun()
+            st.rerun()
 
     # Input data section
     st.markdown("")
-    st.subheader(":blue[Next Data Points]")
+    st.subheader(":blue[Forecast]")
     st.markdown("The model has been trained with data from 2014Q1 to 2023Q4, please input the net sales values for the next periods:")
 
 
