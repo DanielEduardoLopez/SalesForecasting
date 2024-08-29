@@ -12,8 +12,7 @@ Time Series Analyses for forecasting Walmart net sales over the next 10 years in
 # Libraries importation
 import numpy as np
 import pandas as pd
-from statsmodels.iolib.smpickle import load_pickle
-from statsmodels.tsa.statespace.sarimax import SARIMAX, SARIMAXResults
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 import streamlit as st
 import plotly.express as px
 
@@ -31,37 +30,51 @@ st.set_page_config(
     }
 )
 
-
+# Variables
+forecast_str = 'Forecast'
+time_series_str = 'Historical'
 
 # Functions
-def get_model():
-    model = SARIMAXResults.load("sarima_model.pickle")
-    #model = load_pickle("sarima_model.pickle")
-    return model
-
 def get_hist_data():
     link = 'https://raw.githubusercontent.com/DanielEduardoLopez/SalesForecasting/main/dataset_processed.csv'
     df = pd.read_csv(link)\
-        .drop(columns=['units','gdp','walmex','sp500','ipc','exchange_rates','interest_rates']).set_index('Date')
+        .drop(columns=['units','gdp','walmex','sp500','ipc','exchange_rates','interest_rates']).set_index('date')
     return df
 
-def get_forecast(model, periods):
-    preds = model.forecast(start=periods)
+def get_model(time_series):
+    model = SARIMAX(endog=time_series, 
+                    order = (1, 1, 1),
+                    seasonal_order=(1, 1, 1, 4),
+                    ).fit(disp=False)
+    return model
 
+def get_forecast(model, periods):
+    preds = model.forecast(steps=periods).rename(forecast_str) 
+    preds = pd.DataFrame(preds)
+    return preds
 
 def extend_model(model, new_observations, historical):
     last_date = str(historical.index[-1])
     periods = len(new_observations)
     new_index = pd.period_range(start=last_date, periods=periods, freq='Q')
-    new_observations = pd.Series(new_observations, index=new_index)
+    new_observations = pd.Series(new_observations, index=new_index, name=forecast_str)
     model = model.extend(endog=new_observations)
     return model
 
 
 def plot_chart(historical, forecasts):
-    fig = px.line(df, x=historical.index, y=historical.net_sales, title='WALMEX Net Sales Forecast')
-    fig = px.line(df, x=forecasts.index, y=forecasts.net_sales, title='WALMEX Net Sales Forecast')
-    fig.show()
+    data = pd.concat([historical, forecasts], axis=1)
+    data = data.rename(columns={'net_sales': time_series_str})
+    fig = px.line(data, 
+                  x=data.index, 
+                  y=[time_series_str, forecast_str], 
+                  title='WALMEX Net Sales Forecast',
+                  color_discrete_map={
+                 time_series_str: "lightblue",
+                 forecast_str: "red"},
+                  )    
+    #fig.add_scatter(forecasts, x=forecasts.index, y=forecasts.net_sales, mode='lines', line_color='red')    
+    return fig
 
 
 
@@ -86,6 +99,7 @@ if "app_page" not in st.session_state:
     page = "Homepage"
 else:
     page = st.session_state["app_page"]
+    
 
 # Side bar
 st.sidebar.markdown("")
@@ -184,13 +198,22 @@ elif page == "Forecast":
     with bcol2:
         if st.button('Go to Homepage'):
             st.session_state["app_page"] = "Homepage"
-               
+    
+    # Initial Forecast
+    historical = get_hist_data()
+    model = get_model(historical)
+    predictions = get_forecast(model, 10*4)
+    line_chart = plot_chart(historical, predictions)
+
+    st.markdown("")
+    st.subheader(":blue[Forecast]")
+    st.plotly_chart(line_chart, config=config, use_container_width=True)
 
     # Input data section
     st.markdown("")
-    st.subheader(":blue[Forecast]")
+    st.subheader(":blue[New Forecast]")
     st.markdown("The model has been trained with data from 2014Q1 to 2023Q4, please input the net sales values for the next periods:")
-
+    
 
     st.markdown("")
     st.markdown("")
@@ -204,12 +227,12 @@ elif page == "Forecast":
     with bcol2:
         if st.button('Predict Probability :nerd_face:'):
             # Get input array from user's input
-            input_array = get_input_array()
+            
             # Model
-            model = get_model()
+            #model = get_model()
 
             # Prediction
-            Y = model.predict(input_array)
+            #preds = get_forecast(model, periods)
             st.success("Success! Please scroll down...")
             st.session_state["flag_charts"] = 2
 
@@ -225,9 +248,9 @@ elif page == "Forecast":
         st.markdown("")
         st.markdown("")
 
-        df = get_df(Y)
-        pie_chart = plot_pie_chart(df)
-        bar_chart = plot_bar_chart(df)
+        
+        
+        
 
         # Pie chart
         bcol1, bcol2, bcol3 = st.columns([0.1, 0.8, 0.1])
