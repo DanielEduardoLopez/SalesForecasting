@@ -69,7 +69,7 @@ numba==0.58.1
 numpy==1.24.4
 openpyxl==3.1.2
 packaging==23.2
-pandas==1.5.3
+pandas==2.0.3
 parso==0.8.3
 patsy==0.5.6
 peewee==3.17.1
