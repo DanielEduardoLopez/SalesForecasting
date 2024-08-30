@@ -21,7 +21,7 @@ import plotly.express as px
 st.set_page_config(
     page_title="Walmart Sales Forecasting",
     page_icon="🇲🇽",
-    layout="centered",
+    layout="centered",    
     initial_sidebar_state="collapsed",
     menu_items={
         'Get Help': 'https://www.linkedin.com/in/daniel-eduardo-lopez',
@@ -33,12 +33,14 @@ st.set_page_config(
 # Variables
 forecast_str = 'Forecast'
 time_series_str = 'Historical'
+historical_color = 'blue'
+pred_color = 'red' #'#C70039'
 
 # Functions
 def get_hist_data():
     link = 'https://raw.githubusercontent.com/DanielEduardoLopez/SalesForecasting/main/dataset_processed.csv'
     df = pd.read_csv(link)\
-        .drop(columns=['units','gdp','walmex','sp500','ipc','exchange_rates','interest_rates']).set_index('date')
+        .drop(columns=['units','gdp','walmex','sp500','ipc','exchange_rates','interest_rates']).set_index('date').sort_index(ascending=True)
     return df
 
 def get_model(time_series):
@@ -63,17 +65,39 @@ def extend_model(model, new_observations, historical):
 
 
 def plot_chart(historical, forecasts):
+
+    # Adjusting plots continuity    
+    last_obs = historical.tail(1).rename(columns={'net_sales':forecast_str})
+    forecasts = pd.concat([forecasts, last_obs], axis=0)
+    forecasts.index = pd.to_datetime(forecasts.index)
+    forecasts = forecasts.sort_index()
+    
+    # Concatenating historical and forecasts into a single dataframe
     data = pd.concat([historical, forecasts], axis=1)
     data = data.rename(columns={'net_sales': time_series_str})
+
+    # Plot
     fig = px.line(data, 
                   x=data.index, 
                   y=[time_series_str, forecast_str], 
-                  title='WALMEX Net Sales Forecast',
+                  title=None,
+                  template="plotly",
                   color_discrete_map={
-                 time_series_str: "lightblue",
-                 forecast_str: "red"},
+                 time_series_str: historical_color,
+                 forecast_str: pred_color},
                   )    
-    #fig.add_scatter(forecasts, x=forecasts.index, y=forecasts.net_sales, mode='lines', line_color='red')    
+    fig.update_layout(
+                        xaxis_title="Date", 
+                        yaxis_title="Net Sales (Millions of MXN)",                                                
+                        plot_bgcolor='rgba(137,196,244,0.15)',
+                        legend_title_text='',
+                        margin=dict(l=20, r=20, t=20, b=20),
+    )
+    fig.update_xaxes(title_font=dict(size=17, color='black'),
+                     showgrid=True, gridwidth=1, gridcolor='white')
+    fig.update_yaxes(title_font=dict(size=17, color='black'),
+                     showgrid=True, gridwidth=1, gridcolor='white')
+    
     return fig
 
 
@@ -112,7 +136,7 @@ with col1:
     st.image("Picture.jpg")
 
 with col2:
-    st.markdown("Hi! I'm Eduardo, senior data analyst at AstraZeneca. I love learning, and this is a personal project to play with time series analysis. :computer:")
+    st.markdown("Hi! I'm Eduardo, senior data analyst at AstraZeneca. I love learning, and this is a personal project to play with time series analysis. :chart_with_upwards_trend: :computer:")
 
 st.sidebar.markdown("")
 
@@ -170,13 +194,14 @@ if page == "Homepage":
     st.markdown("Based on all the models fitted, the :blue[**$\t{SARIMA}(1,1,1)(1,1,1)_{4}$ model**] exhibited the best performance, achieving about **2675.576** of **RMSE**, about **2372.531** of **MAE**, and a $r^{2}$ of about **0.983**.")
     st.markdown("Thus, the resulting model had a good performance overall, outmatching the multivariate/regression approaches.")
     st.markdown("According to the results from this study, **Walmart of Mexico (WALMEX) will meet its goal of doubling its sales from 211,436 mdp to 424,050 mdp in the third quarter of 2033**.")
-    st.markdown('Please go the :orange[**_Forecast_**] page to play with the model. :blush:')
+    st.markdown('Please go the :blue[**_Forecast_**] page to play with the model. :blush:')
 
     bcol1, bcol2, bcol3 = st.columns([1, 1, 1])
 
     with bcol2:
         if st.button('Go to Forecast Page'):
-            st.session_state["app_page"] = "Forecast"            
+            st.session_state["app_page"] = "Forecast"
+            st.experimental_rerun        
 
     st.markdown("")
 
@@ -191,13 +216,14 @@ elif page == "Forecast":
 
     # Brief description of the app
     url_repository = "https://github.com/DanielEduardoLopez/SalesForecasting"
-    st.write('Uses a $\t{SARIMA}(1,1,1)(1,1,1)_{4}$ model trained on the historical net sales data of WALMEX (Wal-Mart de México S.A.B. de C.V., 2024) from 2014Q1 to 2023Q4 to forecast net sales over the next 10 years. Check out the code [here](%s) and more details at the <h style="color:orange;"><i><b>Homepage</b></i></h>. Please do not take the predictions from this app so seriously. 😉' % url_repository, unsafe_allow_html=True)
+    st.write('Uses a $\t{SARIMA}(1,1,1)(1,1,1)_{4}$ model trained on the historical net sales data of WALMEX (Wal-Mart de México S.A.B. de C.V., 2024) from **2014Q1** to **2023Q4** to forecast net sales over **the next 10 years**. Check out the code [here](%s) and more details at the :blue[**_Homepage_**].' % url_repository, unsafe_allow_html=True)
 
     bcol1, bcol2, bcol3 = st.columns([1, 1, 1])
 
     with bcol2:
         if st.button('Go to Homepage'):
             st.session_state["app_page"] = "Homepage"
+            st.experimental_rerun
     
     # Initial Forecast
     historical = get_hist_data()
@@ -207,12 +233,15 @@ elif page == "Forecast":
 
     st.markdown("")
     st.subheader(":blue[Forecast]")
+    st.markdown("The net sales forecast for Walmart in Mexico over the next 10 years is as follows:")
+    st.markdown('<p style="font-size: 18px" align="center"><b>Net Sales Forecast for Walmart in Mexico</b></p>', unsafe_allow_html=True)
     st.plotly_chart(line_chart, config=config, use_container_width=True)
+    st.markdown("According to plot above, Walmart of Mexico (WALMEX) will meet its goal of **doubling its sales from 211,436 mdp in 2023Q3 to 424,050 mdp in 2033Q3**.")
 
     # Input data section
     st.markdown("")
     st.subheader(":blue[New Forecast]")
-    st.markdown("The model has been trained with data from 2014Q1 to 2023Q4, please input the net sales values for the next periods:")
+    st.markdown("The model has been trained with data from 2014Q1 to 2023Q4, please input the net sales values for the next periods to retrain the model, and the number of periods you would like to forecast.")
     
 
     st.markdown("")
@@ -225,7 +254,7 @@ elif page == "Forecast":
     st.session_state["flag_charts"] = 1
 
     with bcol2:
-        if st.button('Predict Probability :nerd_face:'):
+        if st.button('Forecast :nerd_face:'):
             # Get input array from user's input
             
             # Model
@@ -243,8 +272,7 @@ elif page == "Forecast":
     elif st.session_state["flag_charts"] == 2:
 
         # Charts sections
-        st.subheader(":blue[Prediction Results]")
-        st.markdown("According to the provided socioeconomic and demographic data, the probability of suffering different crimes in Mexico is as follows: :bar_chart:")
+        st.markdown("According to the provided input, the net sales forecast is as follows: :bar_chart:")
         st.markdown("")
         st.markdown("")
 
@@ -255,7 +283,7 @@ elif page == "Forecast":
         # Pie chart
         bcol1, bcol2, bcol3 = st.columns([0.1, 0.8, 0.1])
         with bcol2:
-            st.markdown('<p style="font-size: 22px" align="center"><b>Overall Probability of Suffering Any Crime in Mexico</b></p>', unsafe_allow_html=True)
+            st.markdown('<p style="font-size: 22px" align="center"><b>Net Sales Forecast for Walmart in Mexico</b></p>', unsafe_allow_html=True)
             st.plotly_chart(pie_chart, config=config, use_container_width=True)
         st.markdown("Don't freak out if you get 100% or so. Everyone is exposed to suffer a crime in Mexico in their lifetime. Petty crimes most likely.")
         st.markdown("")
