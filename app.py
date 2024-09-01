@@ -243,10 +243,22 @@ elif page == "Forecast":
     st.subheader(":blue[New Forecast]")
     st.markdown("The model has been trained with data from 2014Q1 to 2023Q4, please input the net sales values for the next periods to retrain the model, and the number of periods you would like to forecast.")
     
+    edited_df = st.data_editor(predictions)
 
     st.markdown("")
     st.markdown("")
 
+    
+    js = '''
+        <script>
+            var body = window.parent.document.querySelector(".main");
+            console.log(body);
+            body.scrollTop = 0;
+        </script>
+        '''
+
+    st.components.v1.html(js)
+    
     # Results section
 
     bcol1, bcol2, bcol3 = st.columns([1, 1, 1])
