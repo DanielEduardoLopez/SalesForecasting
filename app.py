@@ -55,11 +55,9 @@ def get_forecast(model, periods):
     preds = pd.DataFrame(preds)
     return preds
 
-def extend_model(model, new_observations, historical):
-    last_date = str(historical.index[-1])
-    periods = len(new_observations)
-    new_index = pd.period_range(start=last_date, periods=periods, freq='Q')
-    new_observations = pd.Series(new_observations, index=new_index, name=forecast_str)
+def extend_model(model, new_observations):    
+    new_observations['date'] = pd.to_datetime(new_observations.Date)
+    new_observations = new_observations.set_index('date')['Net_Sales'].values    
     model = model.extend(endog=new_observations)
     return model
 
@@ -162,13 +160,13 @@ if page == "Homepage":
 
     # Introduction    
     st.header(":blue[Welcome!]")
-    st.markdown("Walmart of Mexico (or WALMEX) is one of the most important retail companies within the region, with 3,903 stores in Mexico and Central America, an equity of 199,086,037 MXN, and a yearly revenue of 880,121,761 MXN, according to the figures from December 2023. According to WALMEX last financial report, its goal is to double its sales in a period of 10 years (Wal-Mart de México S.A.B. de C.V., 2024).")
-    st.markdown('Time series are "a set of data points ordered in time" (Pexeiro, 2022), which can be analyzed to calculate forecasts and get valuable insights (Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023).')
-    st.markdown("Univariate time series is the most used approach when analyzing time series (Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023), by means of models such as Moving Average (MA), Autoregressive Moving Average (ARMA), Autoregressive Integrated Moving Average (ARIMA), or Simple Exponential Smoothing; which solely depend on the time and the variable under study.")
-    st.markdown("On the other hand, it is also possible to forecast time series using regression-based modeling, in which other variables or features are used to predict the response variable (Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023). This approach could have the advantage of quantifying the impact of the external economic indicators in the performance of an organization.")
-    st.markdown("In the case of Mexico, it is possible to collect public data from different government offices such as INEGI or BANXICO, or from international sources such as the S&P500, and to assess how they correlate to revenue.")
-    st.markdown("In this context, it is desirable to explore both approaches to predict WALMEX net sales over the next years. Thus, the purpose of the present project was to forecast WALMEX net sales and, then, use that information to predict whether WALMEX will be able to achieve its long-term goal of doubling its sales within the next ten years.")
-    st.markdown("To do so, several univariate, multivariate time series and regression models were built using Python 3 and its libraries Statsmodels, Prophet, Darts, and Scikit-learn:")
+    st.markdown("**Walmart of Mexico (or WALMEX)** is one of the most important retail companies within the region, with **3,903 stores** in Mexico and Central America, an equity of **199,086,037 MXN**, and a yearly revenue of **880,121,761 MXN**, according to the figures from December 2023. According to WALMEX last financial report, its goal is **to double its sales in a period of 10 years** (Wal-Mart de México S.A.B. de C.V., 2024).")
+    st.markdown('**Time series** are "a set of data points ordered in time" (Pexeiro, 2022), which can be analyzed to calculate forecasts and get valuable insights (Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023).')
+    st.markdown("**Univariate time series** is the most used approach when analyzing time series (Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023), by means of models such as Moving Average (MA), Autoregressive Moving Average (ARMA), Autoregressive Integrated Moving Average (ARIMA), or Simple Exponential Smoothing; which solely depend on the time and the variable under study.")
+    st.markdown("On the other hand, it is also possible to forecast time series using **regression-based modeling**, in which other variables or features are used to predict the response variable (Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023). This approach could have the advantage of quantifying the impact of the external economic indicators in the performance of an organization.")
+    st.markdown("In the case of Mexico, it is possible to collect public data from different government offices such as INEGI or BANXICO, or from international sources such as the S&P500, and to assess **how they correlate to revenue.**")
+    st.markdown("In this context, it is desirable to explore both approaches **to predict WALMEX net sales over the next years**. Thus, the purpose of the present project was to forecast WALMEX net sales and, then, use that information to predict whether WALMEX will be able to achieve its long-term goal of **doubling its sales within the next ten years.**")
+    st.markdown("To do so, several **univariate, multivariate time series and regression models** were built using Python 3 and its libraries Statsmodels, Prophet, Darts, and Scikit-learn:")
     st.markdown("- Moving Average (MA) model")
     st.markdown("- Autoregressive (AR) model")
     st.markdown("- A series of Autoregressive (AR) models with Additive Decomposition")
@@ -245,7 +243,7 @@ elif page == "Forecast":
     
     data_points = st.slider("Select number of observations to add to model:", min_value=1, max_value=20, value=4)
 
-    st.markdown('Now, edit the net sales values at the "Net_Sales" column on the following table:')
+    st.markdown('Now, edit the net sales values at the **"Net_Sales"** column on the following table:')
     
     df = (predictions.reset_index()
           .rename(columns={'index':'Date'})          
@@ -256,12 +254,18 @@ elif page == "Forecast":
           .iloc[:data_points]   
           )   
 
-    edited_df = st.experimental_data_editor(df, num_rows="dynamic", disabled=False)
+    edited_df = st.experimental_data_editor(df, disabled=False)
 
     st.markdown('Finally, select the number of periods (quarters) you would like to forecast:')
 
-    periods = st.slider("Select number of periods to forecast:", min_value=4, max_value=40, value=20)
-  
+    periods = st.slider("Select number of periods to forecast:", min_value=4, max_value=40, value=20)  
+    
+    # Results section
+
+    bcol1, bcol2, bcol3 = st.columns([1, 1, 1])
+
+    st.session_state["flag_charts"] = 1
+
     js = '''
         <script>
             var body = window.parent.document.querySelector(".main");
@@ -271,22 +275,15 @@ elif page == "Forecast":
         '''
 
     st.components.v1.html(js)
-    
-    # Results section
-
-    bcol1, bcol2, bcol3 = st.columns([1, 1, 1])
-
-    st.session_state["flag_charts"] = 1
 
     with bcol2:
         if st.button('Forecast :nerd_face:'):
-            # Get input array from user's input
-            
+                        
             # Model
-            #model = get_model()
+            new_model = extend_model(model, edited_df)
 
             # Prediction
-            #preds = get_forecast(model, periods)
+            preds = get_forecast(new_model, periods)
             st.success("Success! Please scroll down...")
             st.session_state["flag_charts"] = 2
 
@@ -297,29 +294,11 @@ elif page == "Forecast":
     elif st.session_state["flag_charts"] == 2:
 
         # Charts sections
-        st.markdown("According to the provided input, the net sales forecast is as follows: :bar_chart:")
+        st.markdown("According to the provided input, the net sales forecast is as follows: :chart_with_upwards_trend:")
         st.markdown("")
-        st.markdown("")
-
-        
-        
-        
-
-        # Pie chart
-        bcol1, bcol2, bcol3 = st.columns([0.1, 0.8, 0.1])
-        with bcol2:
-            st.markdown('<p style="font-size: 22px" align="center"><b>Net Sales Forecast for Walmart in Mexico</b></p>', unsafe_allow_html=True)
-            st.plotly_chart(pie_chart, config=config, use_container_width=True)
-        st.markdown("Don't freak out if you get 100% or so. Everyone is exposed to suffer a crime in Mexico in their lifetime. Petty crimes most likely.")
-        st.markdown("")
-        st.markdown("")
-
-        # Bar chart
-        bcol1, bcol2, bcol3 = st.columns([0.1, 0.8, 0.1])
-        with bcol2:
-            st.markdown(
-                '<p style="font-size: 22px" align="center"><b>Probability of Suffering Different Crimes in Mexico</b></p>',
-                unsafe_allow_html=True)
-            st.plotly_chart(bar_chart, config=config, use_container_width=True)
+        st.markdown('<p style="font-size: 18px" align="center"><b>New Net Sales Forecast for Walmart in Mexico</b></p>', unsafe_allow_html=True)
+        line_chart = plot_chart(historical, predictions)
+        st.plotly_chart(line_chart, config=config, use_container_width=True)
+        st.markdown("")        
 
 
