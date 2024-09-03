@@ -241,14 +241,27 @@ elif page == "Forecast":
     # Input data section
     st.markdown("")
     st.subheader(":blue[New Forecast]")
-    st.markdown("The model has been trained with data from 2014Q1 to 2023Q4, please input the net sales values for the next periods to retrain the model, and the number of periods you would like to forecast.")
+    st.markdown("The model has been trained with data from 2014Q1 to 2023Q4. Please select the number of net sales values you would like to input to retrain the model.")
     
-    edited_df = st.data_editor(predictions)
+    data_points = st.slider("Select number of observations to add to model:", min_value=1, max_value=20, value=4)
 
-    st.markdown("")
-    st.markdown("")
-
+    st.markdown('Now, edit the net sales values at the "Net_Sales" column on the following table:')
     
+    df = (predictions.reset_index()
+          .rename(columns={'index':'Date'})          
+          .assign(Quarter= lambda df: df.Date.dt.to_period('Q').astype(str))
+          .assign(Date= lambda df: df.Date.dt.date)
+          .assign(Net_Sales = lambda df: round(df.Forecast,0))
+          .drop(columns=['Forecast'])
+          .iloc[:data_points]   
+          )   
+
+    edited_df = st.experimental_data_editor(df, num_rows="dynamic", disabled=False)
+
+    st.markdown('Finally, select the number of periods (quarters) you would like to forecast:')
+
+    periods = st.slider("Select number of periods to forecast:", min_value=4, max_value=40, value=20)
+  
     js = '''
         <script>
             var body = window.parent.document.querySelector(".main");
