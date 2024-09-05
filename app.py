@@ -33,8 +33,10 @@ st.set_page_config(
 # Variables
 forecast_str = 'Forecast'
 time_series_str = 'Historical'
+new_observations_str = 'New Observations'
 historical_color = 'blue'
 pred_color = 'red' #'#C70039'
+new_observations_color = 'green'
 
 # Functions
 def get_hist_data():
@@ -55,10 +57,13 @@ def get_forecast(model, periods):
     preds = pd.DataFrame(preds)
     return preds
 
-def extend_model(model, new_observations):    
-    new_observations['date'] = pd.to_datetime(new_observations.Date)
-    new_observations = new_observations.set_index('date')['Net_Sales'].values    
-    model = model.extend(endog=new_observations)
+def process_df(df):
+    df['date'] = pd.to_datetime(df.Date)
+    df = df.set_index('date').drop(columns=['Date', 'Quarter']).rename(columns={'Net_Sales':'net_sales'})
+    return df 
+
+def extend_model(model, new_observations):        
+    model = model.extend(endog=new_observations.values)
     return model
 
 
@@ -98,7 +103,50 @@ def plot_chart(historical, forecasts):
     
     return fig
 
+def plot_chart_retrained_model(historical, forecasts, new_observations):
 
+    historical = historical.rename(columns={'net_sales': time_series_str})
+    new_observations = new_observations.rename(columns={'net_sales': new_observations_str})
+    forecasts = forecasts.rename(columns={'net_sales': forecast_str})
+
+    # Adjusting plots continuity    
+    last_obs = historical.tail(1).rename(columns={time_series_str: new_observations_str})
+    new_observations = pd.concat([new_observations, last_obs], axis=0)
+    new_observations.index = pd.to_datetime(new_observations.index)
+    new_observations = new_observations.sort_index()
+
+    last_obs = new_observations.tail(1).rename(columns={new_observations_str: forecast_str})
+    forecasts = pd.concat([forecasts, last_obs], axis=0)
+    forecasts.index = pd.to_datetime(forecasts.index)
+    forecasts = forecasts.sort_index()
+    
+    # Concatenating historical and forecasts into a single dataframe
+    data = pd.concat([historical, new_observations, forecasts], axis=1)    
+
+    # Plot
+    fig = px.line(data, 
+                  x=data.index, 
+                  y=[time_series_str, new_observations_str, forecast_str], 
+                  title=None,
+                  template="plotly",
+                  color_discrete_map={
+                 time_series_str: historical_color,
+                 new_observations_str: new_observations_color,
+                 forecast_str: pred_color},
+                  )    
+    fig.update_layout(
+                        xaxis_title="Date", 
+                        yaxis_title="Net Sales (Millions of MXN)",                                                
+                        plot_bgcolor='rgba(137,196,244,0.15)',
+                        legend_title_text='',
+                        margin=dict(l=20, r=20, t=20, b=20),
+    )
+    fig.update_xaxes(title_font=dict(size=17, color='black'),
+                     showgrid=True, gridwidth=1, gridcolor='white')
+    fig.update_yaxes(title_font=dict(size=17, color='black'),
+                     showgrid=True, gridwidth=1, gridcolor='white')
+    
+    return fig
 
 # Disabling fullscreen view for images in app
 hide_img_fs = '''
@@ -211,7 +259,7 @@ if page == "Homepage":
 
 # Predict Page
 elif page == "Forecast":
-
+    
     # Brief description of the app
     url_repository = "https://github.com/DanielEduardoLopez/SalesForecasting"
     st.write('Uses a $\t{SARIMA}(1,1,1)(1,1,1)_{4}$ model trained on the historical net sales data of WALMEX (Wal-Mart de México S.A.B. de C.V., 2024) from **2014Q1** to **2023Q4** to forecast net sales over **the next 10 years**. Check out the code [here](%s) and more details at the :blue[**_Homepage_**].' % url_repository, unsafe_allow_html=True)
@@ -228,7 +276,7 @@ elif page == "Forecast":
     model = get_model(historical)
     predictions = get_forecast(model, 10*4)
     line_chart = plot_chart(historical, predictions)
-
+    
     st.markdown("")
     st.subheader(":blue[Forecast]")
     st.markdown("The net sales forecast for Walmart in Mexico over the next 10 years is as follows:")
@@ -241,6 +289,8 @@ elif page == "Forecast":
     st.subheader(":blue[New Forecast]")
     st.markdown("The model has been trained with data from 2014Q1 to 2023Q4. Please select the number of net sales values you would like to input to retrain the model.")
     
+    
+
     data_points = st.slider("Select number of observations to add to model:", min_value=1, max_value=20, value=4)
 
     st.markdown('Now, edit the net sales values at the **"Net_Sales"** column on the following table:')
@@ -255,6 +305,7 @@ elif page == "Forecast":
           )   
 
     edited_df = st.experimental_data_editor(df, disabled=False)
+    new_observations = process_df(edited_df) 
 
     st.markdown('Finally, select the number of periods (quarters) you would like to forecast:')
 
@@ -280,15 +331,18 @@ elif page == "Forecast":
         if st.button('Forecast :nerd_face:'):
                         
             # Model
-            new_model = extend_model(model, edited_df)
+            new_time_series = pd.concat([historical,new_observations], axis=0)
+            new_model = get_model(new_time_series)
+            #new_model = extend_model(model, new_observations)
 
             # Prediction
-            preds = get_forecast(new_model, periods)
+            new_preds = get_forecast(new_model, periods)
             st.success("Success! Please scroll down...")
             st.session_state["flag_charts"] = 2
 
 
     if st.session_state["flag_charts"] == 1:
+        
         pass
 
     elif st.session_state["flag_charts"] == 2:
@@ -297,8 +351,9 @@ elif page == "Forecast":
         st.markdown("According to the provided input, the net sales forecast is as follows: :chart_with_upwards_trend:")
         st.markdown("")
         st.markdown('<p style="font-size: 18px" align="center"><b>New Net Sales Forecast for Walmart in Mexico</b></p>', unsafe_allow_html=True)
-        line_chart = plot_chart(historical, predictions)
-        st.plotly_chart(line_chart, config=config, use_container_width=True)
+        line_chart_retrained_model = plot_chart_retrained_model(historical, new_preds, new_observations)
+        st.plotly_chart(line_chart_retrained_model, config=config, use_container_width=True)
         st.markdown("")        
 
+    
 
