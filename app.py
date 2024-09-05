@@ -148,6 +148,28 @@ def plot_chart_retrained_model(historical, forecasts, new_observations):
     
     return fig
 
+def get_conclusion(time_series, predictions, last_date='2023-07-01'):
+
+    predictions = predictions.rename(columns={forecast_str:'net_sales'})
+    time_series = time_series.rename(columns={time_series_str:'net_sales'})
+    
+    last_sales = time_series.loc[last_date].values
+    sales_doubled = predictions.loc[predictions.iloc[:,0].values >= 2*last_sales,:]
+    
+    try:
+            # Converting to datetime
+            date = pd.to_datetime(str(sales_doubled.index[0]))
+
+            # Converting to year-quarter format
+            year_quarter = date.to_period('Q')
+
+            # Printing result
+            return f'WALMEX will double its net sales from 2023Q3 in **{str(year_quarter)}**, with a forecasted figure of about **${float(sales_doubled.values[0]):,.2f} (mdp)**.'
+        
+    except:
+            return 'It seems that WALMEX will not be able to double its net sales within the selected time period.'
+
+
 # Disabling fullscreen view for images in app
 hide_img_fs = '''
 <style>
@@ -353,7 +375,11 @@ elif page == "Forecast":
         st.markdown('<p style="font-size: 18px" align="center"><b>New Net Sales Forecast for Walmart in Mexico</b></p>', unsafe_allow_html=True)
         line_chart_retrained_model = plot_chart_retrained_model(historical, new_preds, new_observations)
         st.plotly_chart(line_chart_retrained_model, config=config, use_container_width=True)
-        st.markdown("")        
+        st.markdown("")    
+        conclusion = get_conclusion(historical, new_preds)
+        st.markdown(conclusion) 
+
+        st.markdown('Thanks for giving a try!')
 
     
 
