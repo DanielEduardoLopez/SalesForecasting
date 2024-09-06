@@ -269,7 +269,7 @@ if page == "Homepage":
     with bcol2:
         if st.button('Go to Forecast Page'):
             st.session_state["app_page"] = "Forecast"
-            st.experimental_rerun        
+            st.experimental_rerun()        
 
     st.markdown("")
 
@@ -291,7 +291,7 @@ elif page == "Forecast":
     with bcol2:
         if st.button('Go to Homepage'):
             st.session_state["app_page"] = "Homepage"
-            st.experimental_rerun
+            st.experimental_rerun()
     
     # Initial Forecast
     historical = get_hist_data()
