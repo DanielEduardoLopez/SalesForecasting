@@ -116,3 +116,31 @@ Later, the GDP and inflation data were retrieved from <a href='https://www.inegi
 Finally, the MXN/USD exchange rates, the bonds interest rates (CETES 28), and the money market representative interest rates (28 day TIIE) data were retrieved from <a href="https://www.banxico.org.mx/">Banxico's website</a> in form of CSV files.
 
 
+### **6.2 Data Exploration** <a class="anchor" id="eda"></a>
+
+The collected datasets were explored to describe its attributes, number of records, shapes, data types, their quality in terms of its percentage of missing values and suspected extreme outliers; as well as to perform an initial exploration of statistical measures, time trends, distributions and relationships among variables.
+
+It was identified that several attributes in the datasets exhibited missing values, the vast majority in a small extent. So, the method **dropna()** was sufficient to handle those missing values. However, in the case of the attributes *OBS_NOTE* in the gdp dataset, or *Sq.mt. Mexico* and *Sq.mt. Central America* in the sales dataset, whose missing values rates (%) are higher than 30%, so they were removed during the preparation step.
+
+Likewise, the datasets were assessed to identify any extreme outliers according to the interquartile range criterion ($quartile \pm IQR * 3$) [(NIST/SEMATECH, 2012)](#nist). It was found that the datasets were free from extreme outliers.
+
+
+### **6.2 Data Exploration** <a class="anchor" id="eda"></a>
+
+The collected datasets were explored to describe its attributes, number of records, shapes, data types, their quality in terms of its percentage of missing values and suspected extreme outliers; as well as to perform an initial exploration of statistical measures, time trends, distributions and relationships among variables.
+
+It was identified that several attributes in the datasets exhibited missing values, the vast majority in a small extent. So, the method **dropna()** was sufficient to handle those missing values. However, in the case of the attributes *OBS_NOTE* in the gdp dataset, or *Sq.mt. Mexico* and *Sq.mt. Central America* in the sales dataset, whose missing values rates (%) are higher than 30%, so they were removed during the preparation step.
+
+Likewise, the datasets were assessed to identify any extreme outliers according to the interquartile range criterion ($quartile \pm IQR * 3$) [(NIST/SEMATECH, 2012)](#nist). It was found that the datasets were free from extreme outliers.
+
+Furthermore, the data was initialy analyzed to calculate simple statistical measures, identify time trends, explore distributions and relationships for each data source; as well as exploring time patterns. 
+
+It was found that the stock value of WALMEX and S&P500 had a strong positive trend; whereas the Mexican IPC had a weak one. Mexican GDP showed a positive trend over the last 10 years with a sharply temporary decrease during the Covid pandemic. The exchange rate showed a weak positive trend over the last ten years. Moreover, both bonds and money market interest rates showed an arbitrary trend, as those rates are set by the Central Bank of Mexico according to their contractive inflation policy.
+
+The net sales of WALMEX, S&P500, and GDP showed distributions skewed to the right; whereas the stock value of the IPC exhibited a normal distribution. On the other hand, the exchange rates dataset showed two distributions: the first distribution was skewed to the right, and the second one resembled a normal distribution. No distribution was noticeable in the bonds rates and money market interest rates datasets.
+
+Finally, the stock value of WALMEX and the S&P500 exhibited a strong positive correlation; whereas a weak positive correlation was observed between the stock value of WALMEX and the Mexican IPC. A very weak positive correlation was seen between the S&P500 and the IPC. A strong positive correlation was also observed for all the variables net sales, units, and commercial area in Mexico and Central America. And, a positive correlation was found between net sales and GDP. Moreover, as expectable, a strong positive correlation was found for the bonds rates and the money market interest rates, and no relationship was observed among the exchange rates and the bonds or interest rates.
+
+### **6.3 Data Preparation** <a class="anchor" id="preparation"></a>
+
+Pending...
