@@ -99,3 +99,20 @@ The methodology of the present study is based on the CRISP-DM [(Chapman et al., 
 8. **Evaluation**: The different models were ranked in terms of the **Root Mean Squared Error (RMSE)**, the **Mean Absolute Error (MAE)**, and **Coefficient of Determination** $(r^{2})$. The best univariate, multivariate, and regression models were selected and retrained with all the historical data, and they were used to predict whether Walmart of Mexico would be able to double its sales within the next ten years.
 9. **Deployment**: The best forecasting model was deployed using Streamlit and Plotly.
 
+___
+<a class="anchor" id="results"></a>
+## **6. Results**
+
+### **6.1 Data Collection** <a class="anchor" id="collection"></a>
+
+Firstly, WALMEX sales figures were retrieved from the <a href="https://www.walmex.mx/en/financial-information/annual.html">Walmex's investors website</a>. As the financial data was disclosed in a quaterly basis in 40 PDF files hosted on a variety of inconsistent links, for sake of efficiency, it was decided to collect the data manually and consolidate it in an Excel file. 
+
+The amount of files was sizeable for manual handling, and the complexity of developing a script for scraping and parsing each file was too high to just retrieve the account of *Net sales*. Thus, it was decided to proceed in a manual fashion. Its important to note that net sales figures for WALMEX are in millions of Mexican pesos (mdp, for its acronym in Spanish).
+
+Then, the stock close values of WALMEX, and the index values from the IPC and the S&P500 were retrieved from the API of *Yahoo! Finance* through the library **yfinance**. The currency of the WALMEX stock value is Mexican pesos (MXN).
+
+Later, the GDP and inflation data were retrieved from <a href='https://www.inegi.org.mx/servicios/api_indicadores.html'>INEGI's Query Constructor</a>, saving the response JSON files into disk, and then loading them into the notebook. It's important to note that GDP values are in millions of Mexican pesos at 2018 prices.
+
+Finally, the MXN/USD exchange rates, the bonds interest rates (CETES 28), and the money market representative interest rates (28 day TIIE) data were retrieved from <a href="https://www.banxico.org.mx/">Banxico's website</a> in form of CSV files.
+
+
