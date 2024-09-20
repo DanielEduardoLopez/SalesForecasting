@@ -63,5 +63,39 @@ ___
 Walmart de México will manage to double its sales within the next ten years.
 
 
+___
+<a class="anchor" id="methodology"></a>
+## **5. Methodology**
 
+The methodology of the present study is based on the CRISP-DM [(Chapman et al., 2000)](#chapman) framework and Rollin’s *Foundational Methodology for Data Science* [(Rollins, 2015)](#rollins):
+
+1. **Analytical approach**: Building and evaluation of **univariate and multivariate time series** and **regression models**.
+2. **Data requirements**: Data about WALMEX's net sales, WALMEX stock value, IPC index (performance of the largest and most liquid stocks listed on the Mexican Stock Exchange), S&P500 index, MXN/USD exchange rate, bonds interest rate (CETES28), money market representative interest rates (28 day TIIE), inflation, and gross domestic product (GDP) of Mexico.
+3. **Data collection**: Data from a period of the last 10 years (from 01 Feb 2014 to 01 Feb 2024) was collected from <a href="https://finance.yahoo.com/">Yahoo Finance</a>, <a href="https://www.walmex.mx/en/financial-information/annual.html">Walmex's investors website</a>, <a href="https://www.inegi.org.mx/">INEGI</a>, and <a href="https://www.banxico.org.mx/">Banxico</a>.
+4. **Data exploration**: Data was explored with Python 3 and its libraries Numpy, Pandas, Matplotlib and Seaborn.
+5. **Data preparation**: Data was cleaned and prepared with Python 3 and its libraries Numpy and Pandas.
+6. **Exploratory Data Analysis**: Statistical measures, distributions, time trends, relationships, and correlations were assessed using Python 3 and its libraries Pandas, Matplotlib, and Seaborn.
+7. **Data modeling**: Ten univariate time series models were built and assessed in Python 3 and its libraries Statsmodels and Prophet to predict the net sales of WALMEX: 
+    - **Moving Average (MA) model**, 
+    - **Autoregressive (AR) model**, 
+    - a series of **Autoregressive (AR) models** with **Additive Decomposition**, 
+    - **Autoregressive Moving Average (ARMA) model**, 
+    - **Autoregressive Integrated Moving Average (ARIMA) model**, 
+    - **Seasonal Autoregressive Integrated Moving Average (SARIMA) model**, 
+    - **Seasonal Autoregressive Integrated Moving Average with Exogenous Variables (SARIMAX) model**, 
+    - **Simple Exponential Smoothing (SES) model**, 
+    - **Holt-Winters (HW) model**, and
+    - **Prophet Univariate Time Series Modeling**.
+
+    Then, three vector models were created and trained in Python 3 and its libraries Statsmodels and Darts to predict the values of the selected macroeconomic indicators as a multivariate time series:
+    - **Vector Autoregressive (VAR) model**, 
+    - **Vector Autoregressive Moving Average (VARMA) model**, and 
+    - **Vector Autoregressive Integrated Moving Average (VARIMA) model**  
+
+    After that, two regression models were built using **Random Forests** and **Support Vector Machines** in Python 3 and its library Scikit-learn to predict WALMEX total sales based on the predictions for the best performing multivariate time series model. 
+    
+    All the models were fit using a training set with 80% of the data, and assessed using a testing set with the remaining 20% of the data. The scores **Root Mean Squared Error (RMSE)**, the **Mean Absolute Error (MAE)**, and **Coefficient of Determination** $(r^{2})$ were used for model assessment.
+
+8. **Evaluation**: The different models were ranked in terms of the **Root Mean Squared Error (RMSE)**, the **Mean Absolute Error (MAE)**, and **Coefficient of Determination** $(r^{2})$. The best univariate, multivariate, and regression models were selected and retrained with all the historical data, and they were used to predict whether Walmart of Mexico would be able to double its sales within the next ten years.
+9. **Deployment**: The best forecasting model was deployed using Streamlit and Plotly.
 
