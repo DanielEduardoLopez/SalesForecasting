@@ -149,5 +149,230 @@ In this context, the following transformations were performed:
 
 ### **6.4 Exploratory Data Analysis** <a class="anchor" id="eda"></a>
 
-Pending...
+The prepared dataset was explored to calculate simple statistical measures, identify time trends, explore distributions and relationships from the unified dataset as well as assessing stationarity, autocorrelation, decomposition and cointegration among attributes.
 
+A high-level view of the time series for all the features is shown below:
+
+<p align="center">
+	<img src="Images/fig_variables_over_time.png?raw=true" width=70% height=60%>
+</p>
+
+Moreover, it could be seen that the variables **units**, **S&P500**, **WALMEX stock**, and **net sales** have a positive relationship; whereas the **GDP** and **interest rates** showed a moderate positive relationship:
+
+<p align="center">
+	<img src="Images/fig_variables_distributions_and_relationships.png?raw=true" width=90% height=90%>
+</p>
+
+Furthermore, it could be seen that the correlation among **net sales**, **units**, **WALMEX stock**, and **S&P500** was strong; whereas **GDP**, **interest rates** and **IPC** were moderately correlated. In contrast, **exchange rates**, **GDP** and **IPC** were weakly correlated:
+
+<p align="center">
+	<img src="Images/fig_correlation_matrix.png?raw=true" width=70% height=60%>
+</p>
+
+Then, the stationarity of the net sales time series was assessed by testing for unit roots with the **Augmented Dickey-Fuller (ADF) test** [(Peixeiro, 2022)](#peixeiro), using a 95% confidence level: 
+
+$$H_{0}: Non\text{-}stationary$$
+
+$$H_{1}: Stationary$$
+
+$$\alpha = 0.95$$
+
+```bash
+ADF statistic:  1.3627370980379012
+P-value:  0.9969381097148852
+```
+
+As the $p\text{-}value > 0.05$ then the null hypothesis cannot be rejected. So, the time series is not stationary. 
+
+In this context, the net sales data was transformed using **differencing** to stabilize the trend and seasonality [(Peixeiro, 2022)](#peixeiro):
+
+<p align="center">
+	<img src="Images/fig_first-order_differenced_net_sales.png?raw=true" width=70% height=60%>
+</p>
+
+```bash
+ADF statistic:  -1.6511761047174953
+P-value:  0.45642712357493526
+```
+
+Even though the ADF statistic is now negative, the $p\text{-}value > 0.05$, so the null hypothesis cannot be rejected. So, the time series is still not stationary after the first-order differencing. 
+
+Thus, the net sales were transformed again with a second-order differencing, and the ADF test was applied once more.
+
+<p align="center">
+	<img src="Images/fig_second-order_differenced_net_sales.png?raw=true" width=70% height=60%>
+</p>
+
+```bash
+ADF statistic:  -4.941259634510584
+P-value:  2.89677222031049e-05
+```
+
+Now, the ADF statistic is strongly negative and the $p\text{-}value < 0.05$, so the null hypothesis is rejected. The second-order differenced time series is stationary.
+
+Moreover, as the VAR model requires all the time series to be stationary as well [(Peixeiro, 2022)](#peixeiro), the stationarity of the other macroeconomic variables was also tested with the Augmented Dickey-Fuller (ADF) test:
+
+$$H_{0}: Non\text{-}stationary$$
+
+$$H_{1}: Stationary$$
+
+$$\alpha = 0.95$$
+
+```bash
+units:
+ADF statistic: 0.403
+P-value: 0.982
+The series is not stationary.
+
+gdp:
+ADF statistic: -3.197
+P-value: 0.020
+The series is stationary.
+
+walmex:
+ADF statistic: -1.143
+P-value: 0.697
+The series is not stationary.
+
+sp500:
+ADF statistic: -0.191
+P-value: 0.940
+The series is not stationary.
+
+ipc:
+ADF statistic: -2.044
+P-value: 0.268
+The series is not stationary.
+
+exchange_rates:
+ADF statistic: -2.308
+P-value: 0.169
+The series is not stationary.
+
+interest_rates:
+ADF statistic: -3.185
+P-value: 0.021
+The series is stationary.
+
+```
+
+Thus, only the *gdp* and *interest_rates* series are stationary, while the other were not. So, for simplicity, first-order differencing transformations were applied to all the series in order to simplify the detransformation when doing predictions with the VAR model.
+
+```bash
+units:
+ADF statistic: -5.445
+P-value: 0.000
+The series is stationary.
+
+gdp:
+ADF statistic: -6.037
+P-value: 0.000
+The series is stationary.
+
+walmex:
+ADF statistic: -4.932
+P-value: 0.000
+The series is stationary.
+
+sp500:
+ADF statistic: -4.322
+P-value: 0.000
+The series is stationary.
+
+ipc:
+ADF statistic: -5.091
+P-value: 0.000
+The series is stationary.
+
+exchange_rates:
+ADF statistic: -4.562
+P-value: 0.000
+The series is stationary.
+
+interest_rates:
+ADF statistic: -3.253
+P-value: 0.017
+The series is stationary.
+```
+
+Thus, with the first-order differencing was enough to render all the macroeconomic indicators series as stationaries.
+
+Later, the autocorrelation of the net sales time series was assessed by means of the Autorcorrelation Function (ACF) plot, to explore the significant coefficients/lags in the series:
+
+<p align="center">
+	<img src="Images/fig_net_sales_autocorrelation.png?raw=true" width=70% height=60%>
+</p>
+
+Thus, according to the ACF plot, the lags 2, 3, 4, and 5 are significant, which means that the time series is actually dependent on its past values.
+
+<p align="center">
+	<img src="Images/fig_first-order_differenced_net_sales_autocorrelation.png?raw=true" width=70% height=60%>
+</p>
+
+For the first-order differenced net sales autocorrelation plot, as there are no consecutive significant lags after lag 2, it is possible to state that the first-order differenced net sales is autocorrelated only at lags 1 and 2.
+
+<p align="center">
+	<img src="Images/fig_second-order_differenced_net_sales_autocorrelation.png?raw=true" width=70% height=60%>
+</p>
+
+Likewise, as there are no consecutive significant lags after lag 2, it is possible to state that the second-order differenced net sales is autocorrelated only at lags 1 and 2, too. However, it is clear that the overall trend of the ACF follows a sinusoidal-like pattern. This is evidence that the time series is autorregressive [(Pexerio, 2022)](#peixeiro).
+
+As an important conclusion so far, as the ADF test of the first-order differenced net sales showed that the time series was not stationary, and the ACF plot of the first-order differenced net sales showed an autocorrelation at lag 2, then, **the net sales time series is not a random walk**. This means that statistical learning techniques can be successfully applied to estimate forecasts on the data [(Peixeiro, 2022)](#peixeiro).
+
+As part of the explotatory data analysis, the WALMEX net sales series was decomposed using the *seasonal_decompose* method from the **statsmodels** library.
+
+Firstly, an **additive decomposition** was performed:
+
+<p align="center">
+	<img src="Images/fig_additive_decomposition_for_walmex_net_sales_training_set.png?raw=true" width=70% height=60%>
+</p>
+
+From the plot above, it is clear that the WALMEX net sales adjusted very well to a additive model, as the trend is a straight line with a positive slope, and the seasonality could be isolated very well from the series exhibiting both regular frequency (with a cycle number of 4) and amplitude.
+
+Then, a **multiplicative decomposition** was performed as well on the series:
+
+<p align="center">
+	<img src="Images/fig_multiplicative_decomposition_for_walmex_net_sales.png?raw=true" width=70% height=60%>
+</p>
+
+As the residuals in the multiplicative decomposition show an uniform value, this is an indication that the decomposition failed to properly capture all the information from the series. So, this decomposition approach is not appropriate.
+
+Finally, to check whether the variables shared a common stochastic trend, or more formally, whether there is a linear combination of these variables that is stable (stationary) [(Kotzé, 2024)](#kotze); **Johansen's Cointegration test** was performed [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni).
+
+The Johansen test checks the cointegration rank $r$ of a given set of vectors. The null hypothesis of $r=0$ implies no cointegration relationship; whereas a rank of $r\leq1$ means at least one cointegration relationship, a rank of $r\leq2$ means at least two cointegration relationships, etc. [(Wang, 2018)](#wang):
+
+$$H_{0}: Non\text{-}cointegration$$
+
+$$H_{1}: Cointegration$$
+
+$$\alpha = 0.95$$
+
+The test was performed using the most restrictive deterministic term order that assumes a linear trend (```det_order=1```), and one lag (```k_ar_diff=1```):
+
+| Rank | CL 90% | CL 95% | CL 99% | Trace Statistic |
+| :----:| :----: | :----: | :----: | :----: | 
+| r = 0 | 133.7852 | 139.2780 | 150.0778 | 195.598921 |
+| r <= 1 | 102.4674 | 107.3429 | 116.9829 | 135.936953 |
+| r <= 2 | 75.1027 | 79.3422 | 87.7748 | 86.363668 |
+| r <= 3 | 51.6492 | 55.2459 | 62.5202 | 49.849412 |
+| r <= 4 | 32.0645 | 35.0116 | 41.0815 | 27.757403 |
+| r <= 5 | 16.1619 | 18.3985 | 23.1485 | 13.290473 |
+| r <= 6 | 2.7055 | 3.8415 | 6.6349 | 4.501931 |
+
+Thus, it is possible to easily reject the null hypothesis of $r=0$, as the trace statistic is above the critical values at the 90%, 95%, and 99% confidence levels. However, the test results above suggested that there is up to two cointegration relationships a the 95% confidence level. So, it is not possible to state that all the variables are cointegrated.
+
+To find the two cointegration relationships, from the relationships and correlations sections, it was clear that the variables *units*, *SP&500*, and *WALMEX* were strongly correlated. So, the cointegration test was performed using only those series.
+
+Rank	| CL 90%	| CL 95%	| CL 99%	| Trace Statistic
+| :----:| :----: | :----: | :----: | :----: | 
+r = 0	| 32.0645	| 35.0116	| 41.0815	| 31.360790
+r <= 1	| 16.1619	| 18.3985	| 23.1485	| 14.621989
+r <= 2	| 2.7055	| 3.8415	| 6.6349	| 4.138262
+
+From the results above, it is possible to reject the null hypothesis of $r=0$, as the trace statistic for $r<=2$ is above the critical value at the 95% confidence level.
+
+Therefore, the Vector models (VAR, VARMA, VARIMA) were later built with the above-mentioned series.
+
+### **6.4 Modeling** <a class="anchor" id="modeling"></a>
+
+Pending...
