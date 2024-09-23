@@ -375,4 +375,69 @@ Therefore, the Vector models (VAR, VARMA, VARIMA) were later built with the abov
 
 ### **6.4 Modeling** <a class="anchor" id="modeling"></a>
 
-Pending...
+Firstly, ten univariate time series models were built to predict the net sales of WALMEX: 
+
+- **Moving Average (MA) model**, 
+- **Autoregressive (AR) model**, 
+- a series of **Autoregressive (AR) models** with **Additive Decomposition**, 
+- **Autoregressive Moving Average (ARMA) model**, 
+- **Autoregressive Integrated Moving Average (ARIMA) model**, 
+- **Seasonal Autoregressive Integrated Moving Average (SARIMA) model**, 
+- **Seasonal Autoregressive Integrated Moving Average with Exogenous Variables (SARIMAX) Model**, 
+- **Simple Exponential Smoothing (SES) model**, 
+- **Holt-Winters (HW) model**, and
+- **Prophet Univariate Time Series Modeling**.
+
+Then, three vector models were created and trained in Python 3 and its libraries Statsmodels and Darts to predict the values of the selected macroeconomic indicators as a multivariate time series:
+- **Vector Autoregressive (VAR) model**, 
+- **Vector Autoregressive Moving Average (VARMA) model**, and 
+- **Vector Autoregressive Integrated Moving Average (VARIMA) model**  
+
+After that, two regression models were built using **Random Forests** and **Support Vector Machines** in Python 3 and its library Scikit-learn to predict WALMEX total sales based on the predictions for the best performing multivariate time series model. 
+
+On the other hand, the models were assessed using **Root Mean Square Error (RMSE)**, **Mean Absolute Error (MAE**), and the **Coefficient of Determination ($r^{2}$)**. 
+
+For reporting purposes, the model assessment plots were shown in the original scale of the WALMEX net sales data.
+
+Finally, for sake of clarity, each model was described separately in the present section.
+
+#### **6.4.1 Moving Average (MA) Model** <a class="anchor" id="ma_model"></a>
+
+A **Moving Average (MA) model** was built as a baseline model. As suggested by the name of this technique, the MA model calculates the moving average changes over time for a certain variable using a specified window lenght [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni). This technique has the advantage of removing random fluctuations and smoothen the data. The MA model is denoted as **MA($q$)**, where $q$ is the number of past error terms that affects the present value of the time series [(Peixeiro, 2022)](#peixeiro).
+
+The model was built using the library **pandas** in Python. 
+
+It was assumed that the current values are linearly dependent on the mean of the series, the current and past error terms; the errors are normally distributed [(Peixeiro, 2022)](#peixeiro). On the other hand, from the ACF plot in the [EDA section](#acf), it was assumed that a window of 5 was enough to capture the overall trend of the data, as the ACF plot showed that lag 5 was the last significant coefficient.
+
+The dataset was split into a training and a testing sets, allocating $80\%$ and $20\%$ of the data, respectively. 
+
+Then, the model was built as follows:
+
+```python
+# Window length
+ma_window = 5
+
+# Calculating the moving average
+y_pred_ma_model = y.rolling(ma_window).mean()
+
+# Narrowing down the moving average calculations to the y_test time period
+y_pred_ma_model = y_pred_ma_model[len(y_train) - 1:]
+y_pred_ma_model
+```
+
+The predictions were plot against the historical net sales data to visually assess the performance of the MA model.
+
+<p align="center">
+	<img src="Images/fig_predictions_from_ma_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+</p>
+
+In view of the plot above, the MA model was able to capture the trend of the time series but not their stationality.
+
+Then, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
+
+```bash
+net_sales
+RMSE: 15216.901
+MAE: 9651.900
+Coefficient of Determination: 0.465
+```
