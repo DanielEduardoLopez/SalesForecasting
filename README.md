@@ -23,6 +23,9 @@ ____
 	6.3 [Data Preparation](#preparation)<br>
   	6.4 [Exploratory Data Analysis](#eda)<br>
 	6.5 [Data Modeling](#modeling)<br>
+ 		&emsp; &nbsp;6.5.1 [Moving Average (MA) Model](#ma_model)<br>
+   		&emsp; &nbsp;6.5.2 [Autoregressive (AR) Model](#ar_model)<br>
+     		&emsp; &nbsp;6.5.3 [Autoregressive (AR) Model with Additive Decomposition](#ar_model_add_decomp)<br>
 	6.6 [Evaluation](#evaluation)<br>
 7. [Deployment](#deployment)<br>
 8. [Conclusions](#conclusions)<br>
@@ -373,7 +376,7 @@ From the results above, it is possible to reject the null hypothesis of $r=0$, a
 
 Therefore, the Vector models (VAR, VARMA, VARIMA) were later built with the above-mentioned series.
 
-### **6.4 Modeling** <a class="anchor" id="modeling"></a>
+### **6.5 Modeling** <a class="anchor" id="modeling"></a>
 
 Firstly, ten univariate time series models were built to predict the net sales of WALMEX: 
 
@@ -401,7 +404,7 @@ For reporting purposes, the model assessment plots were shown in the original sc
 
 Finally, for sake of clarity, each model was described separately in the present section.
 
-#### **6.4.1 Moving Average (MA) Model** <a class="anchor" id="ma_model"></a>
+#### **6.5.1 Moving Average (MA) Model** <a class="anchor" id="ma_model"></a>
 
 A **Moving Average (MA) model** was built as a baseline model. As suggested by the name of this technique, the MA model calculates the moving average changes over time for a certain variable using a specified window lenght [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni). This technique has the advantage of removing random fluctuations and smoothen the data. The MA model is denoted as **MA($q$)**, where $q$ is the number of past error terms that affects the present value of the time series [(Peixeiro, 2022)](#peixeiro).
 
@@ -444,7 +447,7 @@ MAE: 9651.900
 Coefficient of Determination: 0.465
 ```
 
-#### **6.4.2 Autoregressive (AR) Model** <a class="anchor" id="ar_model"></a>
+#### **6.5.2 Autoregressive (AR) Model** <a class="anchor" id="ar_model"></a>
 
 As suggested by the ACF plot in the EDA, a **Autoregressive (AR) model** was built to forecast the net sales of WALMEX. 
 
@@ -490,6 +493,6 @@ MAE: 6558.916
 Coefficient of Determination: 0.863
 ```
 
-#### **6.4.3 Autoregressive (AR) Models with Additive Decomposition** <a class="anchor" id="ar_model_add_decomp"></a>
+#### **6.5.3 Autoregressive (AR) Models with Additive Decomposition** <a class="anchor" id="ar_model_add_decomp"></a>
 
 Pending...
