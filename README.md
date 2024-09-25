@@ -26,6 +26,7 @@ ____
  		&emsp; &nbsp;6.5.1 [Moving Average (MA) Model](#ma_model)<br>
    		&emsp; &nbsp;6.5.2 [Autoregressive (AR) Model](#ar_model)<br>
      		&emsp; &nbsp;6.5.3 [Autoregressive (AR) Model with Additive Decomposition](#ar_model_add_decomp)<br>
+       		&emsp; &nbsp;6.5.4 [Autoregressive Moving Average (ARMA) Model](#ar_model_add_decomp)<br>
 	6.6 [Evaluation](#evaluation)<br>
 7. [Deployment](#deployment)<br>
 8. [Conclusions](#conclusions)<br>
@@ -495,4 +496,46 @@ Coefficient of Determination: 0.863
 
 #### **6.5.3 Autoregressive (AR) Models with Additive Decomposition** <a class="anchor" id="ar_model_add_decomp"></a>
 
+A set of **Autoregressive (AR) Models** based on the **Additive Decomposition** of the WALMEX net sales time series were built. The **Additive Decomposition** was deemed as an appropiate decomposition technique as the EDA suggested that the WALMEX net sales behave in a linear fashion, with constant changes over time, and with a regular seasonality with equal frequency and amplitude [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni). Then, a set of **Autoregressive Models** were built for each component of the time series obtained via the decomposition: trend, seasonality, and remainder. The net sales were forecasted by adding up the predictions from each AR model [(Jamieson, 2019)](#jamieson).
+
+Likewise, the library **statsmodels** in Python was used to perform the **Additive Decomposition** and build the **AR Models**.
+
+It is assumed that the components in the net sales time series can be added together as their changes over time are regular, the time trend is a straight line, and the seasonality has the same frequency and amplitude [(Brownlee, 2020)](#brownlee).
+
+Moreover, it is assumed that each component of the time series can be predicted by means of a linear combination of their historical or lag values [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni).
+
+The dataset was split into a training and a testing sets, allocating 80% and 20% of the data, respectively.
+
+As showed in the EDA, WALMEX net sales adjusted very well to an additive decomposition. So the training set was decomposed using the **Additive model** with the class *seasonal_decompose* from the **statsmodels** library. However, the AR model require the time series to be stationary, so the trend was differenced several times until the ADF test indicated that no unit root was found in the data.
+
+Then, the model was built as follows:
+
+```python
+trend_ar_model = AutoReg(trend_diff3, lags=1).fit()
+seasonality_ar_model = AutoReg(seasonality, lags=3).fit()
+remainder_ar_model = AutoReg(remainder, lags=1).fit()
+```
+
+Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
+
+Likewise, the predictions were plot against the historical net sales data to visually assess the performance of the AR models with additive decomposition.
+
+<p align="center">
+	<img src="Images/fig_predictions_from_ar_models_with_additive_decomposition_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+</p>
+
+In view of the plot above, the additive decomposition and the AR models were able to provide closer predictions for the WALMEX net sales.
+
+Then, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
+
+
+```bash
+RMSE: 11272.204
+MAE: 8970.403
+Coefficient of Determination: 0.706
+```
+
+#### **6.5.4 Autoregressive Moving Average (ARMA) Model** <a class="anchor" id="arma_model"></a>
+
 Pending...
+
