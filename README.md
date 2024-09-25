@@ -409,7 +409,7 @@ The model was built using the library **pandas** in Python.
 
 It was assumed that the current values are linearly dependent on the mean of the series, the current and past error terms; the errors are normally distributed [(Peixeiro, 2022)](#peixeiro). On the other hand, from the ACF plot in the [EDA section](#acf), it was assumed that a window of 5 was enough to capture the overall trend of the data, as the ACF plot showed that lag 5 was the last significant coefficient.
 
-The dataset was split into a training and a testing sets, allocating $80\%$ and $20\%$ of the data, respectively. 
+The dataset was split into a training and a testing sets, allocating 80% and 20% of the data, respectively. 
 
 Then, the model was built as follows:
 
@@ -424,6 +424,8 @@ y_pred_ma_model = y.rolling(ma_window).mean()
 y_pred_ma_model = y_pred_ma_model[len(y_train) - 1:]
 y_pred_ma_model
 ```
+
+Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
 
 The predictions were plot against the historical net sales data to visually assess the performance of the MA model.
 
@@ -441,3 +443,53 @@ RMSE: 15216.901
 MAE: 9651.900
 Coefficient of Determination: 0.465
 ```
+
+#### **6.4.2 Autoregressive (AR) Model** <a class="anchor" id="ar_model"></a>
+
+As suggested by the ACF plot in the EDA, a **Autoregressive (AR) model** was built to forecast the net sales of WALMEX. 
+
+An autoregressive model implies a regression of a variable against itself, which means that the present value of a given point in a time series is linearly dependent on its past values [(Peixeiro, 2022)](#peixeiro). 
+An AR model is denoted as **AR($p$)**, where the order $p$ determines the number of past values that affect the present value  [(Peixeiro, 2022)](#peixeiro).
+
+The model was built using the library **statmodels** in Python.
+
+It was assumed that the current values are linearly dependent on their past values [(Peixeiro, 2022)](#peixeiro). Moreover, it was assumed that the time series was stationary, it was not a random walk, and seasonality effects were not relevant for modeling.
+
+The dataset was split into a training and a testing sets, allocating 80% and 20% of the data, respectively. It is important to note that the second-order differenced net sales time series was used for modeling, as AR models require that the time series be stationary. 
+
+Then, the order for each AR Model was identified by using the **partial autocorrelation function (PACF) plot** to assess the effect of past data (the so-called lags) on future data [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni).
+
+<p align="center">
+	<img src="Images/fig_partial_autocorrelation_for_second-order_differenced_net_sales.png?raw=true" width=70% height=60%>
+</p>
+
+So, the order of the AR model for the trend component was defined as 3.
+
+Then, the model was built as follows:
+
+```python
+ar_model = AutoReg(y_diff2, lags=3).fit()
+```
+
+Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
+
+The predictions were plot against the historical net sales data to visually assess the performance of the MA model.
+
+<p align="center">
+	<img src="Images/fig_predictions_from_ar_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+</p>
+
+In view of the plot above, the AR model was able to capture both the trend and the stationality of the time series.
+
+Then, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
+
+```bash
+net_sales
+RMSE: 7687.806
+MAE: 6558.916
+Coefficient of Determination: 0.863
+```
+
+#### **6.4.3 Autoregressive (AR) Models with Additive Decomposition** <a class="anchor" id="ar_model_add_decomp"></a>
+
+Pending...
