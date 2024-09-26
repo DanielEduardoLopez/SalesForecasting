@@ -611,7 +611,7 @@ Likewise, the predictions were plot against the historical net sales data to vis
 	<img src="Images/fig_predictions_from_arma_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
-In view of the plot above, the additive decomposition and the AR models were able to provide closer predictions for the WALMEX net sales.
+In view of the plot above, the ARMA model was able to provide very close predictions for the WALMEX net sales.
 
 Then, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
 
