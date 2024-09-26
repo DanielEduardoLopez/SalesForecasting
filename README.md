@@ -28,6 +28,7 @@ ____
      		&emsp; &nbsp;6.5.3 [Autoregressive (AR) Model with Additive Decomposition](#ar_model_add_decomp)<br>
        		&emsp; &nbsp;6.5.4 [Autoregressive Moving Average (ARMA) Model](#arma_model)<br>
 	 	&emsp; &nbsp;6.5.5 [Autoregressive Integrated Moving Average (ARIMA) Model](#arima_model)<br>
+   		&emsp; &nbsp;6.5.6 [Seasonal Autoregressive Integrated Moving Average (SARIMA) Model](#sarima_model)<br>
 	6.6 [Evaluation](#evaluation)<br>
 7. [Deployment](#deployment)<br>
 8. [Conclusions](#conclusions)<br>
@@ -605,6 +606,41 @@ arma_model = ARMA_model(p=range(1,6), q=range(1,7), time_series=y_train)
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
 
+After modeling, a residual analysis was carried out to assess whether the difference between the actual and predicted values of the model is due to randomness or, in other words, that the residuals are normally and independently distributed [(Peixeiro, 2022)](#peixeiro).
+
+To do so, the residual analysis was performed in two steps [(Peixeiro, 2022)](#peixeiro): 
+* **Quantile-quantile plot (Q-Q plot)**: To qualitatively assess whether the residuals from the model are normally distributed.
+* **Ljung-Box test**: To test whether the residuals from the model are uncorrelated.
+
+<p align="center">
+	<img src="Images/fig_diagnostic_plots_for_standardized_residuals_from_arma_model.png?raw=true" width=70% height=60%>
+</p>
+
+From the diagnostics plots, the residuals are not completely normally distributed. However, it was considered that the results were good enough for the purposes of the present study, as other more sophisticated models were fit below.
+
+Then, the residuals were assessed by testing for uncorrelation with the **Ljung-Box test** [(Peixeiro, 2022)](#peixeiro), using a 95% confidence level: 
+
+$$H_{0}: No\text{-}autocorrelation$$
+
+$$H_{1}: Autocorrelation$$
+
+$$\alpha = 0.95$$
+
+| lag | lb_stat  | lb_pvalue |
+| --- | -------- | --------- |
+| 1   | 3.271269 | 0.070503  |
+| 2   | 3.40143  | 0.182553  |
+| 3   | 3.420409 | 0.331233  |
+| 4   | 3.519843 | 0.474868  |
+| 5   | 3.689612 | 0.594911  |
+| 6   | 3.763542 | 0.708639  |
+| 7   | 4.246189 | 0.751025  |
+| 8   | 7.457154 | 0.488205  |
+| 9   | 7.726973 | 0.561878  |
+| 10  | 8.526754 | 0.577525  |
+
+For each of the lags from 1 to 10, the $p\text{-}values$ were above $0.05$. Thus, the null hypothesis cannot be rejected and no autocorrelation was found on the set of residuals from the ARMA model. This means that the residuals are independently distributed and the model can be used for forecasting.
+
 Likewise, the predictions were plot against the historical net sales data to visually assess the performance of the AR models with additive decomposition.
 
 <p align="center">
@@ -623,5 +659,128 @@ Coefficient of Determination: 0.942
 ```
 
 #### **6.5.5 Autoregressive Integrated Moving Average (ARIMA) Model** <a class="anchor" id="arima_model"></a>
+
+An **Autoregressive Integrated Moving Average (ARIMA) model** based on the WALMEX net sales time series was built.
+
+The ARIMA is a combination of the autoregressive process, integration and the moving average process for forecasting of non-stationary time series, meaning that the time series has a trend, and/or its variance is not constant. [(Peixeiro, 2022)](#peixeiro). It is denoted as **ARIMA($p$,$d$, $q$)**; where $p$ is the order of the autoregressive process, $d$ is the integration order, and $q$ is the order of the moving average process. The order of $p$ determines the number of past values that affect the present value, the order of $q$ determines the number of past error terms that affect the present value, and the order of integration $d$ indicates the number of times a time series has been differenced to become stationary [(Peixeiro, 2022)](#peixeiro).
+
+Similar to the building of the ARMA model, several orders $p$ and $q$, for the autoregressive and moving average portions of the model, respectively, were tested and the best performing model was selected according to the Akaike Information Criterion (AIC) and a residual analysis [(Peixeiro, 2022)](#peixeiro).
+
+The function **ARIMA** from the library **statsmodels** in Python was used to build the **ARIMA model** [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni).
+
+It was assumed that the present values in the time series are linearly dependend on both its past values and on the mean, the current error and the past errors terms [(Peixeiro, 2022)](#peixeiro). It was also assumed that the residuals from the model were normally distributed, independent, and uncorrelated; approximanting to white noise [(Peixeiro, 2022)](#peixeiro).  
+On the other hand, from the EDA, it was determined that the order of integration for the WALMEX net sales is $d = 2$.
+
+The dataset was split into a training and a testing sets, allocating 80% and 20% of the data, respectively.
+
+Then, the model was built as follows:
+
+```python
+def ARIMA_model(p, d, q, time_series):
+        """
+        Fits and optimize an autoregressive integrated moving average (ARIMA) model based on the Akaike 
+        Information Criterion (AIC), given a set of p and q values; while keeping the d order constant. 
+
+        Parameters:
+        p (range): Range for order p in the autoregressive portion of the ARIMA model.
+        d (int): Integration order.
+        q (range): Range for order q in the moving average portion of the ARIMA model.
+        time_series (pandas.series): Time series data for fitting the ARIMA model.
+
+        Returns:
+        ARIMA_model (statsmodels.arima): An ARIMA model object fitted according to the combination of p and q that minimizes 
+        the Akaike Information Criterion (AIC).
+        
+
+        """
+        # Obtaining the combinations of p and q
+        order_list = list(product(p, q))
+
+        # Creating emtpy lists to store results
+        order_results = []
+        aic_results = []
+
+        # Fitting models
+        for order in order_list:
+
+                ARIMA_model = ARIMA(time_series, order = (order[0], d, order[1])).fit()
+                order_results.append((order[0], d, order[1]))
+                aic_results.append(ARIMA_model.aic)
+        
+        # Converting lists to dataframes
+        results = pd.DataFrame({'(p,d,q)': order_results,
+                                'AIC': aic_results                                
+                                })        
+        # Storing results from the best model
+        lowest_aic = results.AIC.min()
+        best_model = results.loc[results['AIC'] == lowest_aic, ['(p,d,q)']].values[0][0]
+
+        # Printing results
+        print(f'The best model is (p = {best_model[0]}, d = {d}, q = {best_model[2]}), with an AIC of {lowest_aic:.02f}.\n')         
+        print(results)     
+
+        # Fitting best model again
+        ARIMA_model = ARIMA(time_series, order = (best_model[0], best_model[1], best_model[2])).fit()
+
+        return ARIMA_model
+
+arima_model = ARIMA_model(p=range(1,6), d=2, q=range(1,7), time_series=y_train)
+```
+
+Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
+
+After modeling, a residual analysis was carried out to assess whether the difference between the actual and predicted values of the model is due to randomness or, in other words, that the residuals are normally and independently distributed [(Peixeiro, 2022)](#peixeiro).
+
+To do so, the residual analysis was performed in two steps [(Peixeiro, 2022)](#peixeiro): 
+* **Quantile-quantile plot (Q-Q plot)**: To qualitatively assess whether the residuals from the model are normally distributed.
+* **Ljung-Box test**: To test whether the residuals from the model are uncorrelated.
+
+<p align="center">
+	<img src="Images/fig_diagnostic_plots_for_standardized_residuals_from_arima_model.png?raw=true" width=70% height=60%>
+</p>
+
+From the diagnostics plots, the residuals are not completely normally distributed. However, it was considered that the results were good enough for the purposes of the present study.
+
+Then, the residuals were assessed by testing for uncorrelation with the **Ljung-Box test** [(Peixeiro, 2022)](#peixeiro), using a 95% confidence level: 
+
+$$H_{0}: No\text{-}autocorrelation$$
+
+$$H_{1}: Autocorrelation$$
+
+$$\alpha = 0.95$$
+
+| lag | lb_stat  | lb_pvalue |
+| --- | -------- | --------- |
+| 1   | 0.996298 | 0.318208  |
+| 2   | 1.272624 | 0.529241  |
+| 3   | 1.287834 | 0.732024  |
+| 4   | 2.389698 | 0.66449   |
+| 5   | 2.507422 | 0.775377  |
+| 6   | 2.584535 | 0.858889  |
+| 7   | 2.58462  | 0.920591  |
+| 8   | 3.390625 | 0.907511  |
+| 9   | 3.550224 | 0.938451  |
+| 10  | 3.915916 | 0.95106   |
+
+For each of the lags from 1 to 10, the $p\text{-}values$ were well above $0.05$. Thus, the null hypothesis cannot be rejected, meaning that no autocorrelation was found on the set of residuals from the ARIMA model. Thus, the residuals are independently distributed and the model can be used for forecasting.
+
+Likewise, the predictions were plot against the historical net sales data to visually assess the performance of the AR models with additive decomposition.
+
+<p align="center">
+	<img src="Images/fig_predictions_from_arima_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+</p>
+
+In view of the plot above, is seems that the ARIMA model was not able to capture the seasonality of the time series. Notably, the ARMA model was able to yield even better predictions.
+
+Then, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
+
+
+```bash
+RMSE: 27274.028
+MAE: 24120.853
+Coefficient of Determination: -0.720
+```
+
+#### **6.5.6 Seasonal Autoregressive Integrated Moving Average (SARIMA) Model** <a class="anchor" id="sarima_model"></a>
 
 Pending...
