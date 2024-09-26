@@ -26,7 +26,8 @@ ____
  		&emsp; &nbsp;6.5.1 [Moving Average (MA) Model](#ma_model)<br>
    		&emsp; &nbsp;6.5.2 [Autoregressive (AR) Model](#ar_model)<br>
      		&emsp; &nbsp;6.5.3 [Autoregressive (AR) Model with Additive Decomposition](#ar_model_add_decomp)<br>
-       		&emsp; &nbsp;6.5.4 [Autoregressive Moving Average (ARMA) Model](#ar_model_add_decomp)<br>
+       		&emsp; &nbsp;6.5.4 [Autoregressive Moving Average (ARMA) Model](#arma_model)<br>
+	 	&emsp; &nbsp;6.5.5 [Autoregressive Integrated Moving Average (ARIMA) Model](#arima_model)<br>
 	6.6 [Evaluation](#evaluation)<br>
 7. [Deployment](#deployment)<br>
 8. [Conclusions](#conclusions)<br>
@@ -537,5 +538,90 @@ Coefficient of Determination: 0.706
 
 #### **6.5.4 Autoregressive Moving Average (ARMA) Model** <a class="anchor" id="arma_model"></a>
 
-Pending...
+An **Autoregressive Moving Average (ARMA) model** based on the WALMEX net sales time series was built.
 
+The ARMA model is a combination of the autoregressive process and the moving average process, and it is denoted as **ARMA($p$,$q$)**, where $p$ is the order of the autoregressive process, and $q$ is the order of the moving average process. The order of $p$ determines the number of past values that affect the present value; whereas the order of $q$ determines the number of past error terms that affect the present value [(Peixeiro, 2022)](#peixeiro). Indeed, the ACF and PACF plots shown earlier suggested that the time series was neither a pure moving average or a pure autorregressive process as sinusoidal patterns were found and no clear cut-off values between significant and no significant lags were identified. So, the ARMA model could yield better prediction results [(Peixeiro, 2022)](#peixeiro).
+
+Several orders $p$ and $q$, for the autoregressive and moving average portions of the model, respectively, were tested and the best performing model was selected according to the Akaike Information Criterion (AIC) and a residual analysis [(Peixeiro, 2022)](#peixeiro).
+
+Likewise, the function **ARIMA** from the library **statsmodels** in Python was used to build the **ARMA model** [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni).
+
+It was assumed that the present values in the time series are linearly dependend on both its past values and on the mean, the current error and the past errors terms [(Peixeiro, 2022)](#peixeiro). Another key assumption is that the dataset was stationary when performing a second-order differencing. Moreover, it was assumed that the residuals from the model were normally distributed, independent, and uncorrelated; approximanting to white noise [(Peixeiro, 2022)](#peixeiro). 
+
+The dataset was split into a training and a testing sets, allocating 80% and 20% of the data, respectively.
+
+Then, the model was built as follows:
+
+```python
+def ARMA_model(p, q, time_series):
+        """
+        Fits and optimize an autoregressive moving average (ARMA) model given a set of p and q values, minimizing 
+        the Akaike Information Criterion (AIC).
+
+        Parameters:
+        p (range): Range for order p in the autoregressive portion of the ARMA model.
+        q (range): Range for order q in the moving average portion of the ARMA model.
+        time_series (pandas.series): Time series data for fitting the ARMA model.
+
+        Returns:
+        ARMA_model (statsmodels.arima): An ARMA model object fitted according to the combination of p and q that minimizes 
+        the Akaike Information Criterion (AIC).
+        
+
+        """
+        # Obtaining the combinations of p and q
+        order_list = list(product(p, q))
+
+        # Creating emtpy lists to store results
+        order_results = []
+        aic_results = []
+
+        # Fitting models
+        for order in order_list:
+
+                ARMA_model = ARIMA(time_series, order = (order[0], 0, order[1])).fit()
+                order_results.append(order)
+                aic_results.append(ARMA_model.aic)
+        
+        # Converting lists to dataframes
+        results = pd.DataFrame({'(p,q)': order_results,
+                                'AIC': aic_results                                
+                                })        
+        # Storing results from the best model
+        lowest_aic = results.AIC.min()
+        best_model = results.loc[results['AIC'] == lowest_aic, ['(p,q)']].values[0][0]
+
+        # Printing results
+        print(f'The best model is (p = {best_model[0]}, q = {best_model[1]}), with an AIC of {lowest_aic:.02f}.\n')         
+        print(results)     
+
+        # Fitting best model again
+        ARMA_model = ARIMA(time_series, order = (best_model[0], 0, best_model[1])).fit()
+
+        return ARMA_model
+
+arma_model = ARMA_model(p=range(1,6), q=range(1,7), time_series=y_train)
+```
+
+Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
+
+Likewise, the predictions were plot against the historical net sales data to visually assess the performance of the AR models with additive decomposition.
+
+<p align="center">
+	<img src="Images/fig_predictions_from_arma_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+</p>
+
+In view of the plot above, the additive decomposition and the AR models were able to provide closer predictions for the WALMEX net sales.
+
+Then, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
+
+
+```bash
+RMSE: 5006.673
+MAE: 4190.297
+Coefficient of Determination: 0.942
+```
+
+#### **6.5.5 Autoregressive Integrated Moving Average (ARIMA) Model** <a class="anchor" id="arima_model"></a>
+
+Pending...
