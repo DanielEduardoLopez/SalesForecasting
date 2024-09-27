@@ -29,6 +29,8 @@ ____
        		&emsp; &nbsp;6.5.4 [Autoregressive Moving Average (ARMA) Model](#arma_model)<br>
 	 	&emsp; &nbsp;6.5.5 [Autoregressive Integrated Moving Average (ARIMA) Model](#arima_model)<br>
    		&emsp; &nbsp;6.5.6 [Seasonal Autoregressive Integrated Moving Average (SARIMA) Model](#sarima_model)<br>
+     		&emsp; &nbsp;6.5.7 [Seasonal Autoregressive Integrated Moving Average with Exogenous Variables (SARIMAX) Model](#sarimax_model)<br>
+       		&emsp; &nbsp;6.5.8 [Simple Exponential Smoothing (SES) Model](#ses_model)<br>
 	6.6 [Evaluation](#evaluation)<br>
 7. [Deployment](#deployment)<br>
 8. [Conclusions](#conclusions)<br>
@@ -479,7 +481,7 @@ ar_model = AutoReg(y_diff2, lags=3).fit()
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
 
-The predictions were plot against the historical net sales data to visually assess the performance of the MA model.
+The predictions were plot against the historical net sales data to visually assess the performance of the AR model.
 
 <p align="center">
 	<img src="Images/fig_predictions_from_ar_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
@@ -764,7 +766,7 @@ $$\alpha = 0.95$$
 
 For each of the lags from 1 to 10, the $p\text{-}values$ were well above $0.05$. Thus, the null hypothesis cannot be rejected, meaning that no autocorrelation was found on the set of residuals from the ARIMA model. Thus, the residuals are independently distributed and the model can be used for forecasting.
 
-Likewise, the predictions were plot against the historical net sales data to visually assess the performance of the AR models with additive decomposition.
+Likewise, the predictions were plot against the historical net sales data to visually assess the performance of the ARIMA model.
 
 <p align="center">
 	<img src="Images/fig_predictions_from_arima_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
@@ -784,3 +786,42 @@ Coefficient of Determination: -0.720
 #### **6.5.6 Seasonal Autoregressive Integrated Moving Average (SARIMA) Model** <a class="anchor" id="sarima_model"></a>
 
 Pending...
+
+#### **6.5.7 Seasonal Autoregressive Integrated Moving Average with Exogenous Variables (SARIMAX) Model** <a class="anchor" id="sarimax_model"></a>
+
+Pending...
+
+#### **6.5.8 Simple Exponential Smoothing (SES) Model** <a class="anchor" id="ses_model"></a>
+
+A **Simple Expotential Smoothing (SES) model** based on the WALMEX net sales was also built. The SES model is a smoothening technique that uses an exponential window function [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni). It is useful when a time series do not exhibit neither trend nor seasonality [(Atwan, 2022)](#atwan).
+
+The function **SimpleExpSmoothing** from the library **statsmodels** in Python was used to build the **SES model** [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni).
+
+As the SES model requires a time series process to be stationary. So, when using the second-order differenced series, it was assumed that the stationarity requirement was fulfilled. Furthermore, it was assumed that the seasonal patterns were neglectable for the purposes of this model.
+
+The dataset was split into a training and a testing sets, allocating 80% and 20% of the data, respectively.
+
+Then, the model was built as follows:
+
+```python
+ses_model = SimpleExpSmoothing(y_train).fit()
+```
+
+Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
+
+Likewise, the predictions were plot against the historical net sales data to visually assess the performance of the SES model.
+
+<p align="center">
+	<img src="Images/fig_predictions_from_ses_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+</p>
+
+In view of the plot above, as expectable, the SES model was not able to capture neither the trend nor the seasonality of the time.
+
+Then, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
+
+
+```bash
+RMSE: 180107.784
+MAE: 166655.346
+Coefficient of Determination: -74.013
+```
