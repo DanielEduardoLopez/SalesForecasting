@@ -31,6 +31,7 @@ ____
    		&emsp; &nbsp;6.5.6 [Seasonal Autoregressive Integrated Moving Average (SARIMA) Model](#sarima_model)<br>
      		&emsp; &nbsp;6.5.7 [Seasonal Autoregressive Integrated Moving Average with Exogenous Variables (SARIMAX) Model](#sarimax_model)<br>
        		&emsp; &nbsp;6.5.8 [Simple Exponential Smoothing (SES) Model](#ses_model)<br>
+	 	&emsp; &nbsp;6.5.9 [Holt-Winters (HW) Model](#hw_model)<br>
 	6.6 [Evaluation](#evaluation)<br>
 7. [Deployment](#deployment)<br>
 8. [Conclusions](#conclusions)<br>
@@ -910,7 +911,7 @@ $$\alpha = 0.95$$
 
 For each of the lags from 1 to 10, the $p\text{-}values$ were above $0.05$. Thus, the null hypothesis cannot be rejected, meaning that no autocorrelation was found on the set of residuals from the SARIMA model. Thus, the residuals are independently distributed and the model can be used for forecasting.
 
-Likewise, the predictions were plot against the historical net sales data to visually assess the performance of the SARIMA model.
+Later, the predictions were plot against the historical net sales data to visually assess the performance of the SARIMA model.
 
 <p align="center">
 	<img src="Images/fig_predictions_from_sarima_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
@@ -929,7 +930,150 @@ Coefficient of Determination: 0.983
 
 #### **6.5.7 Seasonal Autoregressive Integrated Moving Average with Exogenous Variables (SARIMAX) Model** <a class="anchor" id="sarimax_model"></a>
 
-Pending...
+A **Seasonal Autoregressive Integrated Moving Average with Exogenous Variables (SARIMAX) model** based on the WALMEX net sales, units,	GDP, stock value, SP&500, the IPC, exchange rates, and interest rates time series was built.
+
+The SARIMAX model is a combination of the autoregressive process, integration, moving average process for forecasting of non-stationary time series with seasonal patterns, but also including the effects of external variables [(Peixeiro, 2022)](#peixeiro). It is denoted as $\bold{\text{SARIMA}(p,d,q)(P,D,Q)_{m} + \sum_{i=1} ^{n} \beta_i X_t^i}$; where $p$ is the order of the autoregressive process, $d$ is the integration order, $q$ is the order of the moving average process, $m$ is the frequency; $P$, $D$, and $Q$ are the orders for the seasonal parameters for the autoregressive, integration, and moving average processes, respectively; and $X_t$ are any number of exogenous variables with their corresponding coefficients $\beta$ [(Peixeiro, 2022)](#peixeiro).
+
+Similar to the building of the ARMA, ARIMA, and SARIMA models, several orders $p$, $q$, $P$, and $Q$ were tested and the best performing model was selected according to the Akaike Information Criterion (AIC) and a residual analysis [(Peixeiro, 2022)](#peixeiro).
+
+The function **SARIMAX** from the library **statsmodels** in Python was used to build the **SARIMAX model** [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni).
+
+It is assumed that the present values in the time series are linearly dependend on both its past values and on the mean, the current error and the past errors terms [(Peixeiro, 2022)](#peixeiro). It was also assumed that the residuals from the model were normally distributed, independent, and uncorrelated; approximanting to white noise [(Peixeiro, 2022)](#peixeiro). Furthermore, from the EDA, it was found that the original time series was not stationary. In this sense, it was proposed to use the first-differenced time series as a basis for seasonal differencing. So, the order of integration for the WALMEX net sales was $d = 1$ for the SARIMAX model.
+
+As the time series is reported in a quaterly basis, the frequency or number of observations per seasonal cycle was defined as $m = 4$. This assumption was also supported by the additive decomposition of the time series carried out above. 
+
+Finally, from the seasonal differencing carried out above at the SARIMA model, the seasonal order of integration was defined as $D = 1$.
+
+The dataset was split into a training and a testing sets, allocating 80% and 20% of the data, respectively.
+
+Then, the model was built as follows:
+
+```python
+def SARIMAX_model(p, d, q, P, D, Q, m, endog, exog):
+        """
+        Fits and optimize a seasonal autoregressive integrated moving average with exogeneous variables (SARIMAX) model 
+        based on the  Akaike Information Criterion (AIC), given a set of p, q, P, and Q values; while keeping the 
+        d and D orders constant. The frequency m is also kept constant.
+
+        Parameters:
+        p (range): Range for order p in the autoregressive portion of the SARIMA model.
+        d (int): Integration order.
+        q (range): Range for order q in the moving average portion of the SARIMA model.
+        P (range): Range for order P in the seasonal autoregressive portion of the SARIMA model.
+        D (int): Seasonal integration order.
+        Q (range): Range for order P in the seasonal moving average portion of the SARIMA model.
+        m (int): Number of observations per seasonal cycle.
+        endog (pandas.series): Time series of the endogenous variable for fitting the SARIMAX model.
+        exog (pandas.dataframe): Time series of the exogenous variables for fitting the SARIMAX model.
+
+        Returns:
+        SARIMAX_model (statsmodels.sarimax): An SARIMAX model object fitted according to the combination of p, q, P, 
+        and Q values that minimizes the Akaike Information Criterion (AIC).
+        
+
+        """
+        # Obtaining the combinations of p and q
+        order_list = list(product(p, q, P, Q))
+
+        # Creating emtpy lists to store results
+        order_results = []
+        aic_results = []
+
+        # Fitting models
+        for order in order_list:
+
+                SARIMAX_model = SARIMAX(endog=endog, 
+                                        exog=exog,
+                                       order = (order[0], d, order[1]),
+                                       seasonal_order=(order[2], D, order[3], m),
+                                       ).fit(disp=False)
+                order_results.append((order[0], d, order[1], order[2], D, order[3], m))
+                aic_results.append(SARIMAX_model.aic)
+        
+        # Converting lists to dataframes
+        results = pd.DataFrame({'(p,d,q)(P,D,Q)m': order_results,
+                                'AIC': aic_results                                
+                                })        
+        # Storing results from the best model
+        lowest_aic = results.AIC.min()
+        best_model = results.loc[results['AIC'] == lowest_aic, ['(p,d,q)(P,D,Q)m']].values[0][0]
+
+        # Printing results
+        print(f'The best model is (p = {best_model[0]}, d = {d}, q = {best_model[2]})(P = {best_model[3]}, D = {D}, Q = {best_model[5]})(m = {m}), with an AIC of {lowest_aic:.02f}.\n')         
+        print(results)     
+
+        # Fitting best model again
+        SARIMAX_model = SARIMAX(endog=endog, 
+                                exog=exog, 
+                                order = (best_model[0], d, best_model[2]),
+                                seasonal_order=(best_model[3], D, best_model[5], m),
+                                ).fit(disp=False)
+
+        return SARIMAX_model
+
+sarimax_model = SARIMAX_model(p=range(1,4), 
+                            d=1, 
+                            q=range(1,4), 
+                            P=range(1,2), 
+                            D=1, 
+                            Q=range(1,2), 
+                            m=4, 
+                            endog=y_train, 
+                            exog=exog_train)
+```
+
+Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
+
+After modeling, a residual analysis was carried out to assess whether the difference between the actual and predicted values of the model is due to randomness or, in other words, that the residuals are normally and independently distributed [(Peixeiro, 2022)](#peixeiro).
+
+To do so, the residual analysis was performed in two steps [(Peixeiro, 2022)](#peixeiro): 
+* **Quantile-quantile plot (Q-Q plot)**: To qualitatively assess whether the residuals from the model are normally distributed.
+* **Ljung-Box test**: To test whether the residuals from the model are uncorrelated.
+
+<p align="center">
+	<img src="Images/fig_diagnostic_plots_for_standardized_residuals_from_sarimax_model.png?raw=true" width=70% height=60%>
+</p>
+
+From the diagnostics plots, the residuals are not completely normally distributed. However, it was considered that the results were good enough for the purposes of the present study.
+
+Then, the residuals were assessed by testing for uncorrelation with the **Ljung-Box test** [(Peixeiro, 2022)](#peixeiro), using a 95% confidence level: 
+
+$$H_{0}: No\text{-}autocorrelation$$
+
+$$H_{1}: Autocorrelation$$
+
+$$\alpha = 0.95$$
+
+|    | lb_stat  | lb_pvalue |
+| -- | -------- | --------- |
+| 1  | 0.21327  | 0.644216  |
+| 2  | 0.220932 | 0.895417  |
+| 3  | 0.825297 | 0.843407  |
+| 4  | 9.256681 | 0.054994  |
+| 5  | 9.257353 | 0.099229  |
+| 6  | 9.259061 | 0.159524  |
+| 7  | 9.259126 | 0.234583  |
+| 8  | 9.272412 | 0.319839  |
+| 9  | 9.272497 | 0.41251   |
+| 10 | 9.292785 | 0.504561  |
+
+For each of the lags from 1 to 10, the $p\text{-}values$ were above $0.05$. Thus, the null hypothesis cannot be rejected, meaning that no autocorrelation was found on the set of residuals from the SARIMAX model. Thus, the residuals are independently distributed and the model can be used for forecasting.
+
+Later, the predictions were plot against the historical net sales data to visually assess the performance of the SARIMA model.
+
+<p align="center">
+	<img src="Images/fig_predictions_from_sarimax_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+</p>
+
+In view of the plot above, the SARIMAX model was able to capture the trend and seasonality of the time series. However, its performance was inferior to that from the SARIMA model.
+
+Then, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
+
+```bash
+RMSE: 21608.095
+MAE: 20415.994
+Coefficient of Determination: -0.080
+```
 
 #### **6.5.8 Simple Exponential Smoothing (SES) Model** <a class="anchor" id="ses_model"></a>
 
@@ -965,3 +1109,7 @@ RMSE: 180107.784
 MAE: 166655.346
 Coefficient of Determination: -74.013
 ```
+
+#### **6.5.9 Holt-Winters (HW) Model** <a class="anchor" id="hw_model"></a>
+
+Pending...
