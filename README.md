@@ -32,6 +32,7 @@ ____
      		&emsp; &nbsp;6.5.7 [Seasonal Autoregressive Integrated Moving Average with Exogenous Variables (SARIMAX) Model](#sarimax_model)<br>
        		&emsp; &nbsp;6.5.8 [Simple Exponential Smoothing (SES) Model](#ses_model)<br>
 	 	&emsp; &nbsp;6.5.9 [Holt-Winters (HW) Model](#hw_model)<br>
+   		&emsp; &nbsp;6.5.10 [Prophet Univariate Time Series Model](#prophet_model)<br>
 	6.6 [Evaluation](#evaluation)<br>
 7. [Deployment](#deployment)<br>
 8. [Conclusions](#conclusions)<br>
@@ -1111,5 +1112,40 @@ Coefficient of Determination: -74.013
 ```
 
 #### **6.5.9 Holt-Winters (HW) Model** <a class="anchor" id="hw_model"></a>
+
+A **Holt-Winters (HW) model** based on the WALMEX net sales was built. The HW model is a smoothening technique that uses an exponential weighted moving average process [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni). It is an enhancement over simple exponential smoothing, and can be used when a time series exhibit both a trend and seasonality [(Atwan, 2022)](#atwan).
+
+The function **ExponentialSmoothing** from the library **statsmodels** in Python was used to build the **HW model** [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni).
+
+It has been assumed that the futures values of the time series are dependent upon the past errors terms.
+
+The dataset was split into a training and a testing sets, allocating 80% and 20% of the data, respectively.
+
+Then, the model was built as follows:
+
+```python
+hw_model = ExponentialSmoothing(y_train, trend='additive', seasonal='additive', seasonal_periods=4).fit()
+```
+
+Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
+
+Likewise, the predictions were plot against the historical net sales data to visually assess the performance of the HW model.
+
+<p align="center">
+	<img src="Images/fig_predictions_from_hw_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+</p>
+
+In view of the plot above, the HW model performed notably better than the SES model, as it was able to capture both the trend and seasonality of the WALMEX net sales series.
+
+Then, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
+
+
+```bash
+RMSE: 9508.312
+MAE: 7645.737
+Coefficient of Determination: 0.791
+```
+
+#### **6.5.10 Prophet Univariate Time Series Model** <a class="anchor" id="prophet_model"></a>
 
 Pending...
