@@ -1233,6 +1233,14 @@ prophet_model = prophet_model(y_train, changepoint_prior_scale, seasonality_prio
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
 
+The WALMEX Net Sales Forecast Components from Prophet Model are shown below:
+
+<p align="center">
+	<img src="Images/fig_walmex_net_sales_forecast_components_from_prophet_model.png?raw=true" width=70% height=60%>
+</p>
+
+Thus, according to the chart above, the model has detected strong seasonalities in the WALMEX net sales at the beginning and at the end of the year, which may correspond to several important holidays in Mexico such as the Independence Day and Christmas.
+
 After that, the predictions were plot against the historical net sales data to visually assess the performance of the Prophet model.
 
 <p align="center">
