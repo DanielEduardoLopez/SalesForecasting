@@ -33,6 +33,7 @@ ____
        		&emsp; &nbsp;6.5.8 [Simple Exponential Smoothing (SES) Model](#ses_model)<br>
 	 	&emsp; &nbsp;6.5.9 [Holt-Winters (HW) Model](#hw_model)<br>
    		&emsp; &nbsp;6.5.10 [Prophet Univariate Time Series Model](#prophet_model)<br>
+     		&emsp; &nbsp;6.5.11 [6.11 Vector Autoregressive (VAR) Model](#var_model)<br>
 	6.6 [Evaluation](#evaluation)<br>
 7. [Deployment](#deployment)<br>
 8. [Conclusions](#conclusions)<br>
@@ -1129,7 +1130,7 @@ hw_model = ExponentialSmoothing(y_train, trend='additive', seasonal='additive', 
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
 
-Likewise, the predictions were plot against the historical net sales data to visually assess the performance of the HW model.
+After that, the predictions were plot against the historical net sales data to visually assess the performance of the HW model.
 
 <p align="center">
 	<img src="Images/fig_predictions_from_hw_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
@@ -1137,7 +1138,7 @@ Likewise, the predictions were plot against the historical net sales data to vis
 
 In view of the plot above, the HW model performed notably better than the SES model, as it was able to capture both the trend and seasonality of the WALMEX net sales series.
 
-Then, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
+Finally, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
 
 
 ```bash
@@ -1147,5 +1148,108 @@ Coefficient of Determination: 0.791
 ```
 
 #### **6.5.10 Prophet Univariate Time Series Model** <a class="anchor" id="prophet_model"></a>
+
+A **Univariate Time Series model using Prophet** based on the WALMEX net sales was built. *Prophet* is an open source package built and maintained by Meta for forecasting at scale. It was released in 2017 [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni), and it is able to fit nonlinear trends and multiple seasonalities [(Peixeiro, 2022)](#peixeiro). Prophet implements a general additive model where a time series $y(t)$ is modeled as the linear combination of a trend $g(t)$, a seasonal component $s(t)$, holiday effects $h(t)$, and an error term $ϵ_{t}$ [(Peixeiro, 2022)](#peixeiro):
+
+$$y(t) = g(t) + s(t) + h(t) + ϵ_{t}$$
+
+Even though the model does not take into account any autoregressive process, it has the advantage to be very flexible as "it can accommodate multiple seasonal periods and changing trends [and] it is robust to outliers and missing data" [(Peixeiro, 2022)](#peixeiro):
+
+The function **Prophet** from the library **prophet** in Python was used to build the **model** [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni).
+
+It has been assumed that the net sales series has a non-linear trend, at least one seasonal component, holiday effects, and that the error terms are normally distributed.
+
+The dataset was split into a training and a testing sets, allocating 80% and 20% of the data, respectively.
+
+The model built with Prophet was optimized by using cross-validation and hyperparameter tuning. Specifically, the hypeparameters `changepoint_prior_scale` and `seasonality_prior_scale` were tunned.
+
+```python
+def prophet_model(series, changepoint_prior_scale, seasonality_prior_scale, metric):
+        """
+        Fits and optimizr a univariate time series model with Prophet, given a set of changepoint_prior_scale and 
+        seasonality_prior_scale values.
+
+        Parameters:
+        changepoint_prior_scale (list): Values for the changepoint_prior_scale hyperparameter in Prophet.
+        seasonality_prior_scale (list): Values for the seasonality_prior_scale hyperparameter in Prophet.        
+        series (pandas.dataframe): Time series data in two columns: ds for dates in a date datatype, and y for the series.
+        metric (str): Selected performance metric for optimization: One of 'mse', 'rmse', 'mae', 'mdape', or 'coverage'.
+        
+        Returns:
+        m (prophet.prophet): An Prophet model object optimized according to the combination of tested hyperparameters, by using the 
+        indicated metric.
+        
+        """
+        # Obtaining the combinations of hyperparameters
+        params = list(product(changepoint_prior_scale, seasonality_prior_scale))
+
+        # Creating emtpy lists to store performance results        
+        metric_results = []
+
+        # Defining cutoff dates
+        start_cutoff_percentage = 0.5 # 50% of the data will be used for fitting the model
+        start_cutoff_index = int(round(len(series) * start_cutoff_percentage, 0))
+        start_cutoff = series.iloc[start_cutoff_index].values[0] 
+        end_cutoff = series.iloc[-4].values[0] # The last fourth value is taken as the series is reported in a quarterly basis
+
+        cutoffs = pd.date_range(start=start_cutoff, end=end_cutoff, freq='12M')
+
+        # Fitting models
+        for param in params:
+                m = Prophet(changepoint_prior_scale=param[0], seasonality_prior_scale=param[1])
+                m.add_country_holidays(country_name='MX')
+                m.fit(series)
+        
+                df_cv = cross_validation(model=m, horizon='365 days', cutoffs=cutoffs)
+                df_p = performance_metrics(df_cv, rolling_window=1)
+                metric_results.append(df_p[metric].values[0])
+
+        # Converting list to dataframe
+        results = pd.DataFrame({'Hyperparameters': params,
+                                'Metric': metric_results                                
+                                })     
+           
+        # Storing results from the best model
+        best_params = params[np.argmin(metric_results)]
+
+        # Printing results
+        print(f'\nThe best model hyperparameters are changepoint_prior_scale = {best_params[0]}, and seasonality_prior_scale = {best_params[1]}.\n')  
+        print(results)
+
+        # Fitting best model again
+        m = Prophet(changepoint_prior_scale=best_params[0], seasonality_prior_scale=best_params[1])
+        m.add_country_holidays(country_name='MX')
+        m.fit(series);        
+
+        return m
+
+# Defining hyperparameters values
+changepoint_prior_scale = [0.001, 0.01, 0.1, 0.5]
+seasonality_prior_scale = [0.01, 0.1, 1.0, 10.0]
+
+# Fitting model
+prophet_model = prophet_model(y_train, changepoint_prior_scale, seasonality_prior_scale, 'rmse')
+```
+
+Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
+
+After that, the predictions were plot against the historical net sales data to visually assess the performance of the Prophet model.
+
+<p align="center">
+	<img src="Images/fig_predictions_from_prophet_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+</p>
+
+In view of the plot above, the Prophet model performed well as it was able to capture both the trend and seasonality of the WALMEX net sales series.
+
+Finally, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
+
+
+```bash
+RMSE: 12323.068
+MAE: 10710.708
+Coefficient of Determination: 0.649
+```
+
+#### **6.5.11 Vector Autoregressive (VAR) Model** <a class="anchor" id="var_model"></a>
 
 Pending...
