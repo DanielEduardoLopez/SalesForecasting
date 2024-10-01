@@ -33,7 +33,8 @@ ____
        		&emsp; &nbsp;6.5.8 [Simple Exponential Smoothing (SES) Model](#ses_model)<br>
 	 	&emsp; &nbsp;6.5.9 [Holt-Winters (HW) Model](#hw_model)<br>
    		&emsp; &nbsp;6.5.10 [Prophet Univariate Time Series Model](#prophet_model)<br>
-     		&emsp; &nbsp;6.5.11 [6.11 Vector Autoregressive (VAR) Model](#var_model)<br>
+     		&emsp; &nbsp;6.5.11 [Vector Autoregressive (VAR) Model](#var_model)<br>
+       		&emsp; &nbsp;6.5.12 [Vector Autoregressive Moving Average (VARMA) Model](#varma_model)<br>
 	6.6 [Evaluation](#evaluation)<br>
 7. [Deployment](#deployment)<br>
 8. [Conclusions](#conclusions)<br>
@@ -1259,5 +1260,147 @@ Coefficient of Determination: 0.649
 ```
 
 #### **6.5.11 Vector Autoregressive (VAR) Model** <a class="anchor" id="var_model"></a>
+
+As shown above, the original dataset comprised $40$ historical data points about $7$ features (economic indicators) and $1$ response variable (net sales of WALMEX in millions of MXN). However, based on the results from the Johanssen's cointegration test, only the series *units*, *SP&500*, and *WALMEX* shared enough the same stochastic trend to be used in a multivariate times series model.
+
+A first model for **multivariate times series prediction** was built using a **Vector Autoregression (VAR) model** for forecasting the $3$ selected features. A VAR model was selected due to its ability to forecast multiple features in an easy manner by using the library **statsmodels** in Python [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni). The VAR($p$) model describes the relationship among two or more time series and the impact that their past values have on each other [(Peixeiro, 2022)](#peixeiro). In this sense, the VAR($p$) model is a generalization of the AR model for multiple time series, and the order $p$ determines how many lagged values impact the present value of the different time series [(Peixeiro, 2022)](#peixeiro).
+
+Several orders of $p$ were tested and the best performing model was selected according to the Akaike Information Criterion (AIC). Then, the Granger causality test was applied, which determines whether past values of a time series are statistically significant in forecasting another time series. Then, a residual analysis was finally carried out to assess whether the residuals were close to white noise [(Peixeiro, 2022)](#peixeiro).
+
+The function **VAR** from the library **statsmodels** in Python was used to build the **VAR model** [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni).
+
+It is assumed that the features are cointegrated, i.e., the different features share an underlying stochastic trend, and that the linear combination of the different features is stationary [(Clower, 2020)](#clower). 
+Moreover, it was assumed that the current values are linearly dependent on their past values [(Peixeiro, 2022)](#peixeiro); and that the different time series were stationary, they were not a random walk, and seasonality effects were not relevant for modeling.
+
+The dataset was split into a training and a testing sets, allocating 80% and 20% of the data, respectively.
+
+Later, the VAR model was built using the class *VAR* from the **statsmodels** library.
+
+```python
+def VAR_model(p, series):
+        """
+        Fits and optimizar VAR models using the method VAR from statsmodels given a set of lags, and returns the one
+        with the lowest Akaike Information Criterion (AIC).
+
+        Parameters:
+        p (list): Lag values.
+        series (pandas.dataframe): Time series data.
+
+        Returns:
+        model (statsmodels.var): VAR model object optimized according to the AIC criterion.
+
+        """
+
+        # Creating empty lists to store results
+
+        aic_results = []
+
+        for lag in p:
+                VAR_model = VAR(endog=series).fit(maxlags=lag)
+                aic_results.append(VAR_model.aic)
+        
+        # Converting lists to dataframes
+        results = pd.DataFrame({'(p)': p,
+                                'AIC': aic_results                                
+                                })        
+        # Storing results from the best model
+        lowest_aic = results.AIC.min()
+        best_model = results.loc[results['AIC'] == lowest_aic, ['(p)']].values[0][0]
+
+        # Printing results
+        print(f'The best model is (p = {best_model}), with an AIC of {lowest_aic:.02f}.\n')         
+        print(results)     
+
+        # Fitting best model again
+        VAR_model = VAR(endog=series).fit(maxlags=best_model)
+
+        return VAR_model
+
+p = list(range(1,6))
+
+var_model = VAR_model(p=p, series=X_train)
+
+```
+
+Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
+
+After that, the Granger causality test was applied to determine whether past values of a time series are statistically significant in forecasting another time series [(Peixeiro, 2022)](#peixeiro). This test is unidirectional, so it has to be applied twice for each series.
+
+$$H_{0}: y_{2,t}\text{ does not Granger-cause }y_{1,t}$$
+
+$$H_{1}: y_{2,t}\text{ Granger-cause }y_{1,t}$$
+
+$$\alpha = 0.95$$
+
+|   | y2     | y1     | Granger Causality | Test Interpretation                   | SSR F-test p-values | SSR Chi2-test p-values | LR-test p-values | Params F-test p-values |
+| - | ------ | ------ | ----------------- | ------------------------------------- | ------------------- | ---------------------- | ---------------- | ---------------------- |
+| 0 | sp500  | units  | False             | sp500 does not Granger-causes units.  | 0.5784              | 0.5589                 | 0.5598           | 0.5784                 |
+| 1 | units  | sp500  | False             | units does not Granger-causes sp500.  | 0.4875              | 0.4647                 | 0.4662           | 0.4875                 |
+| 2 | walmex | units  | False             | walmex does not Granger-causes units. | 0.2435              | 0.2165                 | 0.221            | 0.2435                 |
+| 3 | units  | walmex | False             | units does not Granger-causes walmex. | 0.4001              | 0.3748                 | 0.3772           | 0.4001                 |
+| 4 | walmex | sp500  | False             | walmex does not Granger-causes sp500. | 0.3213              | 0.2945                 | 0.298            | 0.3213                 |
+| 5 | sp500  | walmex | False             | sp500 does not Granger-causes walmex. | 0.2099              | 0.1833                 | 0.1883           | 0.2099                 |
+
+Even though, the results from the Granger-causality tests suggested that it is not possible to reject the null hypothesis that the series does not Granger-causes each other, thus rendering the VAR model invalid, it was decided to go further with the model.
+
+Later, a residual analysis was carried out to assess whether the difference between the actual and predicted values of the model is due to randomness or, in other words, that the residuals are normally and independently distributed [(Peixeiro, 2022)](#peixeiro).
+
+To do so, the residual analysis was performed in two steps [(Peixeiro, 2022)](#peixeiro): 
+* **Quantile-quantile plot (Q-Q plot)**: To qualitatively assess whether the residuals from the model are normally distributed.
+* **Ljung-Box test**: To test whether the residuals from the model are uncorrelated.
+
+<p align="center">
+	<img src="Images/fig_q-q_plot_for_standardized_residuals_for_units_series_from_var_model.png?raw=true" width=70% height=60%>
+</p>
+
+<p align="center">
+	<img src="Images/fig_q-q_plot_for_standardized_residuals_for_sp500_series_from_var_model.png?raw=true" width=70% height=60%>
+</p>
+
+<p align="center">
+	<img src="Images/fig_q-q_plot_for_standardized_residuals_for_walmex_series_from_var_model.png?raw=true" width=70% height=60%>
+</p>
+
+From the q-q plots above, it is clear that the standardized residuals for the series *units* and *SP&500* did not follow a normal distribution, which means that the VAR model was not able to capture some information from the data. Despite this result, the analysis continued below.
+
+Then, the residuals were assessed by testing for uncorrelation with the **Ljung-Box test** [(Peixeiro, 2022)](#peixeiro), using a 95% confidence level: 
+
+$$H_{0}: No\text{-}autocorrelation$$
+
+$$H_{1}: Autocorrelation$$
+
+$$\alpha = 0.95$$
+
+For each of the lags from 1 to 10, the $p\text{-}values$ were above $0.05$ (please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a>). Thus, the null hypothesis cannot be rejected, meaning that no autocorrelation was found on the set of residuals from the VAR model. Thus, the residuals are independently distributed and the model could be used for forecasting.
+
+Later, the predictions were plot against the historical net sales data to visually assess the performance of the VAR model.
+
+<p align="center">
+	<img src="Images/fig_predictions_from_var_model_vs_historical_time_series.png?raw=true" width=70% height=60%>
+</p>
+
+In view of the plots above, it can be seen that the VAR model was not able to yield accurate predictions. The only economic indicator whose predictions were more or less accurately was *units*. However, it is important to bear in mind that the COVID pandemic disrupted the historical trends not only in Mexico, but in the entire world. So, fairly, it was very dificult to expect that the VAR model could provide accurate predictions for the years 2021-2023 using the data from 2014-2020 for training.
+
+Then, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
+
+```bash
+units
+RMSE: 41.684
+MAE: 30.270
+Coefficient of Determination: 0.750
+
+sp500
+RMSE: 741.698
+MAE: 699.704
+Coefficient of Determination: -9.352
+
+walmex
+RMSE: 7.841
+MAE: 6.134
+Coefficient of Determination: -7.682
+```
+
+
+#### **6.5.12 Vector Autoregressive Moving Average (VARMA) Model** <a class="anchor" id="varma_model"></a>
 
 Pending...
