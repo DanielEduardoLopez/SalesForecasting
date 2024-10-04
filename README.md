@@ -37,6 +37,7 @@ ____
        		&emsp; &nbsp;6.5.12 [Vector Autoregressive Moving Average (VARMA) Model](#varma_model)<br>
 	 	&emsp; &nbsp;6.5.13 [Vector Autoregressive Integrated Moving Average (VARIMA) Model](#varima_model)<br>
    		&emsp; &nbsp;6.5.14 [Random Forest (RF) Regression Model](#regression_model_rf)<br>
+     		&emsp; &nbsp;6.5.15 [Support Vector Regression (SVR) Model](#regression_model_svm)<br>
 	6.6 [Evaluation](#evaluation)<br>
 7. [Deployment](#deployment)<br>
 8. [Conclusions](#conclusions)<br>
@@ -130,6 +131,7 @@ Later, the GDP and inflation data were retrieved from <a href='https://www.inegi
 Finally, the MXN/USD exchange rates, the bonds interest rates (CETES 28), and the money market representative interest rates (28 day TIIE) data were retrieved from <a href="https://www.banxico.org.mx/">Banxico's website</a> in form of CSV files.
 
 
+
 ### **6.2 Data Exploration** <a class="anchor" id="exploration"></a>
 
 The collected datasets were explored to describe its attributes, number of records, shapes, data types, their quality in terms of its percentage of missing values and suspected extreme outliers; as well as to perform an initial exploration of statistical measures, time trends, distributions and relationships among variables.
@@ -160,6 +162,7 @@ In this context, the following transformations were performed:
 * Group values to the same level of granularity.
 * Join the diferent datasets.
 * Split predictors and response variable.
+
 
 ### **6.4 Exploratory Data Analysis** <a class="anchor" id="eda"></a>
 
@@ -387,6 +390,7 @@ From the results above, it is possible to reject the null hypothesis of $r=0$, a
 
 Therefore, the Vector models (VAR, VARMA, VARIMA) were later built with the above-mentioned series.
 
+
 ### **6.5 Modeling** <a class="anchor" id="modeling"></a>
 
 Firstly, ten univariate time series models were built to predict the net sales of WALMEX: 
@@ -414,6 +418,8 @@ On the other hand, the models were assessed using **Root Mean Square Error (RMSE
 For reporting purposes, the model assessment plots were shown in the original scale of the WALMEX net sales data.
 
 Finally, for sake of clarity, each model was described separately in the present section.
+
+<br>
 
 #### **6.5.1 Moving Average (MA) Model** <a class="anchor" id="ma_model"></a>
 
@@ -457,6 +463,8 @@ RMSE: 15216.901
 MAE: 9651.900
 Coefficient of Determination: 0.465
 ```
+
+<br>
 
 #### **6.5.2 Autoregressive (AR) Model** <a class="anchor" id="ar_model"></a>
 
@@ -504,6 +512,8 @@ MAE: 6558.916
 Coefficient of Determination: 0.863
 ```
 
+<br>
+
 #### **6.5.3 Autoregressive (AR) Models with Additive Decomposition** <a class="anchor" id="ar_model_add_decomp"></a>
 
 A set of **Autoregressive (AR) Models** based on the **Additive Decomposition** of the WALMEX net sales time series were built. The **Additive Decomposition** was deemed as an appropiate decomposition technique as the EDA suggested that the WALMEX net sales behave in a linear fashion, with constant changes over time, and with a regular seasonality with equal frequency and amplitude [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni). Then, a set of **Autoregressive Models** were built for each component of the time series obtained via the decomposition: trend, seasonality, and remainder. The net sales were forecasted by adding up the predictions from each AR model [(Jamieson, 2019)](#jamieson).
@@ -544,6 +554,8 @@ RMSE: 11272.204
 MAE: 8970.403
 Coefficient of Determination: 0.706
 ```
+
+<br>
 
 #### **6.5.4 Autoregressive Moving Average (ARMA) Model** <a class="anchor" id="arma_model"></a>
 
@@ -665,6 +677,8 @@ RMSE: 5006.673
 MAE: 4190.297
 Coefficient of Determination: 0.942
 ```
+
+<br>
 
 #### **6.5.5 Autoregressive Integrated Moving Average (ARIMA) Model** <a class="anchor" id="arima_model"></a>
 
@@ -788,6 +802,8 @@ RMSE: 27274.028
 MAE: 24120.853
 Coefficient of Determination: -0.720
 ```
+
+<br>
 
 #### **6.5.6 Seasonal Autoregressive Integrated Moving Average (SARIMA) Model** <a class="anchor" id="sarima_model"></a>
 
@@ -932,6 +948,7 @@ MAE: 2372.531
 Coefficient of Determination: 0.983
 ```
 
+<br>
 
 #### **6.5.7 Seasonal Autoregressive Integrated Moving Average with Exogenous Variables (SARIMAX) Model** <a class="anchor" id="sarimax_model"></a>
 
@@ -1080,6 +1097,8 @@ MAE: 20415.994
 Coefficient of Determination: -0.080
 ```
 
+<br>
+
 #### **6.5.8 Simple Exponential Smoothing (SES) Model** <a class="anchor" id="ses_model"></a>
 
 A **Simple Expotential Smoothing (SES) model** based on the WALMEX net sales was also built. The SES model is a smoothening technique that uses an exponential window function [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni). It is useful when a time series do not exhibit neither trend nor seasonality [(Atwan, 2022)](#atwan).
@@ -1115,6 +1134,8 @@ MAE: 166655.346
 Coefficient of Determination: -74.013
 ```
 
+<br>
+
 #### **6.5.9 Holt-Winters (HW) Model** <a class="anchor" id="hw_model"></a>
 
 A **Holt-Winters (HW) model** based on the WALMEX net sales was built. The HW model is a smoothening technique that uses an exponential weighted moving average process [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni). It is an enhancement over simple exponential smoothing, and can be used when a time series exhibit both a trend and seasonality [(Atwan, 2022)](#atwan).
@@ -1149,6 +1170,8 @@ RMSE: 9508.312
 MAE: 7645.737
 Coefficient of Determination: 0.791
 ```
+
+<br>
 
 #### **6.5.10 Prophet Univariate Time Series Model** <a class="anchor" id="prophet_model"></a>
 
@@ -1260,6 +1283,8 @@ RMSE: 12323.068
 MAE: 10710.708
 Coefficient of Determination: 0.649
 ```
+
+<br>
 
 #### **6.5.11 Vector Autoregressive (VAR) Model** <a class="anchor" id="var_model"></a>
 
@@ -1401,6 +1426,8 @@ RMSE: 7.841
 MAE: 6.134
 Coefficient of Determination: -7.682
 ```
+
+<br>
 
 
 #### **6.5.12 Vector Autoregressive Moving Average (VARMA) Model** <a class="anchor" id="varma_model"></a>
@@ -1555,6 +1582,8 @@ MAE: 7.041
 Coefficient of Determination: -8.852
 ```
 
+<br>
+
 #### **6.5.13 Vector Autoregressive Integrated Moving Average (VARIMA) Model** <a class="anchor" id="varima_model"></a>
 
 As shown above, the original dataset comprised $40$ historical data points about $7$ features (economic indicators) and $1$ response variable (net sales of WALMEX in millions of MXN). However, based on the results from the Johanssen's cointegration test, only the series *units*, *SP&500*, and *WALMEX* shared enough the same underlying stochastic trend to be used in a multivariate times series model.
@@ -1664,6 +1693,52 @@ MAE: 12.263
 Coefficient of Determination: -26.838
 ```
 
+<br>
+
 #### **6.5.14 Random Forest (RF) Regression Model** <a class="anchor" id="regression_model_rf"></a>
+
+As it was desired to predict a target numeric value, a **regression model** was built for predicting the net sales of WALMEX based on the forecast for the selected $3$ features from the multivariate time series models: *units*, *S&P500*, and *WALMEX* stock value.
+
+It was decided to use a **Random Forest (RF)** approach, as this algorithm provides better models than decision trees and allows to easily identify the most important features in a model [(Géron, 2019)](#geron). Moreover, it is not necessary to neither comply with the assumptions of the linear regression nor to perform feature scaling.
+
+The main assumption is that the net sales of WALMEX can be predicted as a function of the economic indicators of Mexico and USA. Furthermore, it was assumed that the problem was not linearly separable, thus, a linear regression approach was discarded. 
+
+The dataset was split into a training and a testing sets, allocating 80% and 20% of the data, respectively.
+
+Later, the VARIMA model was built as follows:
+
+```python
+rf_model = RandomForestRegressor(n_estimators = 500, random_state = 0)
+rf_model.fit(X_train, y_train)
+```
+
+Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
+
+After modeling, it was observed that the feature **Units** was the most important in the model:
+
+<p align="center">
+	<img src="Images/fig_feature_importances_in_random_forest_regression_model.png?raw=true" width=70% height=60%>
+</p>
+
+Later, the predictions were plot against the historical net sales data to visually assess the performance of the RF model.
+
+<p align="center">
+	<img src="Images/fig_predictions_from_rf_model_vs._walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+</p>
+
+From the plot above, it can be seen that the predictions are very close of the historical time series. Thus, the Random Forest regression model was able to capture the most important features for predicting the net sales of WALMEX. 
+
+Finally, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
+
+```bash
+net_sales
+RMSE: 16256.433
+MAE: 12380.448
+Coefficient of Determination: 0.516
+```
+
+<br>
+
+#### **6.5.15 Support Vector Regression (SVR) Model** <a class="anchor" id="regression_model_svm"></a>
 
 Pending...
