@@ -36,6 +36,7 @@ ____
      		&emsp; &nbsp;6.5.11 [Vector Autoregressive (VAR) Model](#var_model)<br>
        		&emsp; &nbsp;6.5.12 [Vector Autoregressive Moving Average (VARMA) Model](#varma_model)<br>
 	 	&emsp; &nbsp;6.5.13 [Vector Autoregressive Integrated Moving Average (VARIMA) Model](#varima_model)<br>
+   		&emsp; &nbsp;6.5.14 [Random Forest (RF) Regression Model](#regression_model_rf)<br>
 	6.6 [Evaluation](#evaluation)<br>
 7. [Deployment](#deployment)<br>
 8. [Conclusions](#conclusions)<br>
@@ -1419,6 +1420,7 @@ It was assumed that the features were cointegrated, i.e., the different features
 The dataset was split into a training and a testing sets, allocating 80% and 20% of the data, respectively.
 
 Later, the VARMA model was built as follows:
+
 ```python
 def VARMA_model(p, q, series):
         """
@@ -1554,5 +1556,114 @@ Coefficient of Determination: -8.852
 ```
 
 #### **6.5.13 Vector Autoregressive Integrated Moving Average (VARIMA) Model** <a class="anchor" id="varima_model"></a>
+
+As shown above, the original dataset comprised $40$ historical data points about $7$ features (economic indicators) and $1$ response variable (net sales of WALMEX in millions of MXN). However, based on the results from the Johanssen's cointegration test, only the series *units*, *SP&500*, and *WALMEX* shared enough the same underlying stochastic trend to be used in a multivariate times series model.
+
+In this sense, a third model for **multivariate times series prediction** was built using a **Vector Autoregressive Integrated Moving Average (VARIMA) model** for forecasting the $3$ selected features. A VARIMA model was selected as a generalization of the VARMA model to include an integration process [(Peixeiro, 2022)](#peixeiro) for forecasting non-stationary time series, meaning that the time series have a trend, and/or their variance is not constant.
+
+The VARIMA($p$, $d$, $q$) model describes the relationship among two or more non-stationary time series and the impact that their past values  and past error terms have on each other [(Peixeiro, 2022)](#peixeiro). Similar to the VARMA model, the VARIMA($p$, $d$, $q$) model is a generalization of the ARMA model for multiple non-stationary time series, where the order $p$ determines how many lagged values impact the present value of the different time series, the order $d$ indicates the number of times the time series have been differenced to become stationary, and the order $q$ determines the number of past error terms that affect their present values.
+
+The function **VARIMA** from the library **Darts** in Python was used to build the **VARIMA model** [(Herzen et al., 2022)](#herzen).
+
+As the implementation of the VARIMA model in Darts does not supports the prediction of likelihood parameters, the Akaike Information Criterion (AIC) could not be computed for a different set of $p$ and $q$ values. So, the same orders of $p=1$ and $q=1$ obtained during the optimization of the VARMA model were used for VARIMA($1$,$1$).
+
+Then, the Granger causality test was applied to determine whether past values of a time series are statistically significant in forecasting another time series. Then, a residual analysis was finally carried out to assess whether the residuals were normally and independently distributed [(Peixeiro, 2022)](#peixeiro).
+
+It was assumed that the features are cointegrated, i.e., the different features share an underlying stochastic trend, and that the linear combination of the different features is stationary [(Clower, 2020)](#clower). 
+Moreover, it was assumed that the current values are linearly dependent on their past values and past error terms [(Peixeiro, 2022)](#peixeiro), the time series are not a random walk, and seasonality effects were not relevant for modeling.
+
+The dataset was split into a training and a testing sets, allocating 80% and 20% of the data, respectively.
+
+Later, the VARIMA model was built as follows:
+
+```python
+def VARIMA_model(p, d, q, series):
+        """
+        Fits and optimize a VARIMA model based on the Akaike Information Criterion (AIC), given a set of p, d, and q values.
+
+        Parameters:
+        p (int): Order of the autoregressive process in the model.
+        d (int): Integration order in the model.
+        p (int): Order of the moving average process in the model.
+        series (pandas.dataframe): Data for the time series for fitting the model.
+
+        Returns:
+        model (darts.varima): A VARIMA object fitted according to the combination of p, d and q that minimizes 
+        the Akaike Information Criterion (AIC).
+
+
+        """
+        # Converting pandas.dataframe to Darts.TimeSeries
+        series = TimeSeries.from_dataframe(series)
+
+
+        model = VARIMA(p=p, d=d, q=q, trend="n") # No trend for models with integration
+        model.fit(series)
+
+        return model
+
+varima_model = VARIMA_model(p=1, d=1, q=1, series=X_train)
+```
+
+Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
+
+After that, the Granger causality test was applied to determine whether past values of a time series are statistically significant in forecasting another time series [(Peixeiro, 2022)](#peixeiro). This test is unidirectional, so it has to be applied twice for each series.
+
+$$H_{0}: y_{2,t}\text{ does not Granger-cause }y_{1,t}$$
+
+$$H_{1}: y_{2,t}\text{ Granger-cause }y_{1,t}$$
+
+$$\alpha = 0.95$$
+|   | y2     | y1     | Granger Causality | Test Interpretation                   | SSR F-test p-values | SSR Chi2-test p-values | LR-test p-values | Params F-test p-values |
+| - | ------ | ------ | ----------------- | ------------------------------------- | ------------------- | ---------------------- | ---------------- | ---------------------- |
+| 0 | sp500  | units  | False             | sp500 does not Granger-causes units.  | 0.1045              | 0.083                  | 0.0889           | 0.1045                 |
+| 1 | units  | sp500  | False             | units does not Granger-causes sp500.  | 0.1382              | 0.1145                 | 0.1202           | 0.1382                 |
+| 2 | walmex | units  | False             | walmex does not Granger-causes units. | 0.2046              | 0.1787                 | 0.1837           | 0.2046                 |
+| 3 | units  | walmex | False             | units does not Granger-causes walmex. | 0.2054              | 0.1795                 | 0.1844           | 0.2054                 |
+| 4 | walmex | sp500  | False             | walmex does not Granger-causes sp500. | 0.3576              | 0.332                  | 0.3349           | 0.3576                 |
+| 5 | sp500  | walmex | True              | sp500 Granger-causes walmex.          | 0.0021              | 0.0006                 | 0.0013           | 0.0021                 |
+
+Even though, the results from the Granger-causality tests suggested that it is not possible to reject the null hypothesis that the series does not Granger-causes each other, thus rendering the VARIMA model invalid, it was decided to go further with the model.
+
+However, as the implementation of the VARIMA model in Darts only yielded the residuals for the last two observations, the residual analysis couldn't be performed properly.
+
+Thus, the residuals were only assessed by testing for uncorrelation with the **Ljung-Box test** [(Peixeiro, 2022)](#peixeiro), using a 95% confidence level: 
+
+$$H_{0}: No\text{-}autocorrelation$$
+
+$$H_{1}: Autocorrelation$$
+
+$$\alpha = 0.95$$
+
+For the lag 1, the $p\text{-}values$ were above $0.05$ (please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a>). Thus, the null hypothesis cannot be rejected, meaning that no autocorrelation was found on the set of residuals from the VARMA model. Thus, in theory, the residuals are independently distributed and the model could be used for forecasting.
+
+Of course, strictly speaking, as the residual analysis could not be properly performed, it is not possible to know whether the model is valid or not. However, for the purposes of the present study, the model was still used for generating predictions.
+
+<p align="center">
+	<img src="Images/fig_predictions_from_varima_model_vs_historical_time_series.png?raw=true" width=70% height=60%>
+</p>
+
+In view of the plots above, it can be seen that the VARIMA model was not able to yield accurate predictions. The only economic indicator whose predictions were more less accurate was *units*. However, it is important to bear in mind that the COVID pandemic disrupted the historical trends not only in Mexico, but in the entire world. So, fairly, it was very dificult to expect that the VARMA model could provide accurate predictions for the years 2021-2023 using the data from 2014-2020 for training. Notwithstanding with the above, it seems that the performance of the VARIMA model was slightly worse than that of the VARMA model.
+
+Finally, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
+
+```bash
+units
+RMSE: 57.604
+MAE: 42.577
+Coefficient of Determination: 0.523
+
+sp500
+RMSE: 939.278
+MAE: 898.338
+Coefficient of Determination: -15.601
+
+walmex
+RMSE: 14.040
+MAE: 12.263
+Coefficient of Determination: -26.838
+```
+
+#### **6.5.14 Random Forest (RF) Regression Model** <a class="anchor" id="regression_model_rf"></a>
 
 Pending...
