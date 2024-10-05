@@ -1705,7 +1705,7 @@ The main assumption is that the net sales of WALMEX can be predicted as a functi
 
 The dataset was split into a training and a testing sets, allocating 80% and 20% of the data, respectively.
 
-Later, the VARIMA model was built as follows:
+Later, the RF model was built as follows:
 
 ```python
 rf_model = RandomForestRegressor(n_estimators = 500, random_state = 0)
@@ -1737,8 +1737,70 @@ MAE: 12380.448
 Coefficient of Determination: 0.516
 ```
 
+Several number of trees were tested, and the following results were obtained:
+
+Trees | RMSE | MAE | $r^{2}$
+:---:| :---:| :---: | :---:
+50 | 16465.794 | 13240.795 | 0.504
+100 | 16464.343 | 12533.214 | 0.513
+500 | 16256.433 | 12380.448 | 0.516
+
+Thus, based on their performance, the model selected was the RF model with 500 trees.
+
 <br>
 
 #### **6.5.15 Support Vector Regression (SVR) Model** <a class="anchor" id="regression_model_svm"></a>
+
+Likewise, another **regression model** was built for predicting the net sales of WALMEX based on the forecast for the selected $3$ features from the multivariate time series models: *units*, *S&P500*, and *WALMEX stock value*.
+
+A **Support Vector Regression (SVR)** approach was selected, as this algorithm is less restrictive in their assumptions in comparison to a linear regression, it's more robust to outliers, and does not strictly assume a linear relationship between the independent and dependent variables even if using a linear kernel  [(Géron, 2019)](#geron).
+
+The main assumption is that the net sales of WALMEX can be predicted as a function of the economic indicators of Mexico and USA. Also, a strict linear relationship between the variables was not assummed, neither the requirements of normally distribution of the residuals, no multicollinearity, and homoscedasticity.
+
+Firstly, according to the cointegration test, the data was sliced to select only the features *Units*, *SP&500*, and *WALMEX* stock value. Then, the dataset was split into a training and a testing sets, allocating 80% and 20% of the data, respectively.
+
+Then, data was scaled using the function *StandardScaler*. And the SVR model was built using the *SVR* class from the **scikit-learn** library:
+
+Later, the RF model was built as follows:
+
+```python
+svr_model = SVR(kernel='linear', C=1000.0, epsilon=0.1).fit(X_train_sc, y_train)
+```
+
+Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
+
+Later, the predictions were plot against the historical net sales data to visually assess the performance of the SVR model.
+
+<p align="center">
+	<img src="Images/fig_predictions_from_svr_model_vs._walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+</p>
+
+From the plot above, it can be seen that the predictions are close of the historical time series. Thus, the SVR model was able to capture the most important features for predicting the net sales of WALMEX. 
+
+Finally, the **RMSE**, **MAE**, and $\bf{r^{2}}$ score were calculated as follows:
+
+```bash
+net_sales
+RMSE: 14535.582
+MAE: 10676.184
+Coefficient of Determination: 0.402
+```
+
+Several values for the parameters `C` were tested, and the following results were obtained:
+
+C | Epsilon | RMSE | MAE | $r^{2}$
+:---:|:---:| :---:| :---: | :---:
+1.0 | 0.1 | 21540.030 | 15545.984 | -176851.575
+100.0 | 0.1 | 17257.012 | 13353.768 | -10.351
+1000.0 | 0.1 | 14535.582 | 10676.184 | 0.402
+5000.0 | 0.1 | 16414.855 | 11640.130 | 0.470
+10000.0 | 0.1 | 16223.993 | 11624.612 | 0.475
+100000.0 | 0.1 | 18720.282 | 14280.358 | 0.465
+
+Thus, based on their performance, the model selected was the SVR model with `C=1000.0`.
+
+<br>
+
+### **6.6 Evaluation** <a class="anchor" id="evaluation"></a>
 
 Pending...
