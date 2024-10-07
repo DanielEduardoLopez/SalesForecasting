@@ -39,6 +39,8 @@ ____
    		&emsp; &nbsp;6.5.14 [Random Forest (RF) Regression Model](#regression_model_rf)<br>
      		&emsp; &nbsp;6.5.15 [Support Vector Regression (SVR) Model](#regression_model_svm)<br>
 	6.6 [Evaluation](#evaluation)<br>
+ 		&emsp; &nbsp;6.6.1 [Models Ranking](#ranking)<br>
+   		&emsp; &nbsp;6.6.2 [Best Univariate Time Series Model](#best_uni_model)<br>
 7. [Deployment](#deployment)<br>
 8. [Conclusions](#conclusions)<br>
 9. [Bibliography](#bibliography)<br>
@@ -1802,5 +1804,63 @@ Thus, based on their performance, the model selected was the SVR model with `C=1
 <br>
 
 ### **6.6 Evaluation** <a class="anchor" id="evaluation"></a>
+
+In this section, the research question was answered: **Will Walmart of Mexico be able to double its sales within the next ten years? If so, when?**.
+
+Firstly, the models were ranked according to their performance, and the best univariate, multivariate and regression models were selected and retrained using all the historic data.
+
+Then, the WALMEX net sales forecasts were estimated using the two approaches defined in this study: 
+
+1. Best univariate time series model.
+2. Best multivariate time series model coupled with the best regression model.
+
+In both cases, the net sales were forecasted over a period of ten years (2024Q1-2033Q4).
+
+#### **6.6.1 Models Ranking** <a class="anchor" id="ranking"></a>
+
+According to the model assessment performed to each model, the models were ranked in terms of the scores RMSE, MAR and $r^{2}$.
+
+|   | Model                 | RMSE        | MAE         | Coeff. of Determination |
+| - | --------------------- | ----------- | ----------- | ----------------------- |
+| 5 | SARIMA                | 2675.576039 | 2372.531418 | 0.983446                |
+| 3 | ARMA                  | 5006.67272  | 4190.297162 | 0.942035                |
+| 1 | AR                    | 7687.806004 | 6558.916411 | 0.86333                 |
+| 8 | HW                    | 9508.312432 | 7645.737108 | 0.790938                |
+| 2 | AR w/Additive Decomp. | 11272.2035  | 8970.403291 | 0.706176                |
+| 9 | Prophet               | 12323.06809 | 10710.70842 | 0.648839                |
+| 0 | MA                    | 15216.90068 | 9651.9      | 0.464547                |
+| 6 | SARIMAX               | 21608.09528 | 20415.99357 | \-0.079698              |
+| 4 | ARIMA                 | 27274.02776 | 24120.8527  | \-0.720156              |
+| 7 | SES                   | 180107.7842 | 166655.3457 | \-74.012589             |
+
+Thus, in view of the results above, the **$\text{SARIMA}(1,1,1)(1,1,1)_{4}$ model** was the univariate time series model with the best performance in terms of the scores RMSE, MAR and $r^{2}$.
+
+In the case of the multivariate models, the scores are as follows:
+
+|   | Model  | RMSE                                              | MAE                                               | Coeff. of Determination                           |
+| - | ------ | ------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------- |
+| 0 | VAR    | [41.68363399538274, 741.6975334422666, 7.84074... | [30.27016894936554, 699.7044134829706, 6.13388... | [0.7500587264511199, -9.351694912545407, -7.68... |
+| 1 | VARMA  | [29.895275196270124, 806.357115051538, 8.35249... | [26.241590913676305, 763.0903497943536, 7.0409... | [0.8714382007640038, -11.235244127649448, -8.8... |
+| 2 | VARIMA | [57.60360726976815, 939.2783902259093, 14.0402... | [42.57743313428142, 898.3375517962176, 12.2627... | [0.522683780550852, -15.601466594952402, -26.8... |
+
+Thus, in view of the results above, the **$\text{VARMA}(1, 1)$ model** was the multivariate time series model with the best performance in terms of the scores RMSE, MAR and $r^{2}$.
+
+Finally, the scores from the regression models is shown below:
+
+|   | Model | RMSE        | MAE         | Coeff. of Determination |
+| - | ----- | ----------- | ----------- | ----------------------- |
+| 0 | RF    | 16256.43347 | 12380.448   | 0.515834                |
+| 1 | SVR   | 14535.5817  | 10676.18385 | 0.401998                |
+
+Overall, both regression models have a very similar performance. However, as the RF model may be forced to predict net sales values far outside the training range, the SVR was selected as the best performing model.
+
+
+#### **6.6.2 Best Univariate Time Series Model** <a class="anchor" id="best_uni_model"></a>
+
+Pending...
+
+____
+<a class="anchor" id="deployment"></a>
+### **7. Deployment**
 
 Pending...
