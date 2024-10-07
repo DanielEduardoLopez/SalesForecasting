@@ -1880,7 +1880,21 @@ In turn, the above forecasts were used to predict the WALMEX net sales with the 
 
 #### **6.6.4 Research Question's Solution** <a class="anchor" id="solution"></a>
 
-Pending...
+Now, after all the modeling and evaluation, the predictions from the univariate and multivariate/regression models were assessed visually, and the sales on 2023Q3 were compared with the forecasts to determine when WALMEX's goal could be achieved (if possible).
+
+<p align="center">
+	<img src="Images/fig_net_sales_forecast_from_univariate_model.png?raw=true" width=70% height=60%>
+</p>
+
+<p align="center">
+	<img src="Images/fig_net_sales_forecast_from_multivariate-regression_models.png?raw=true" width=70% height=60%>
+</p>
+
+Thus, in view of the results from this study, according to the $\text{SARIMA}(1,1,1)(1,1,1)_{4}$ model, **WALMEX will double its net sales in 2033Q3**, with a forecasted figure of about $424,049.66 (mdp).
+
+On the other hand, according to the $\text{VARMA}(1,1)$ and $SVR$ models, WALMEX will not be able to double its net sales within the next ten years. Even if the trends in their number of units, SP&500 and WALMEX stock value remains constant.
+
+However, the combination of the $\text{VARMA}(1,1)$ and SVR models was not capable of capturing the seasonality of the historical net sales. Thus, it is considered that the predictions from the $\text{SARIMA}(1,1,1)(1,1,1)_{4}$ model were more reliable.
 
 ____
 <a class="anchor" id="deployment"></a>
