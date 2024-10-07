@@ -41,6 +41,8 @@ ____
 	6.6 [Evaluation](#evaluation)<br>
  		&emsp; &nbsp;6.6.1 [Models Ranking](#ranking)<br>
    		&emsp; &nbsp;6.6.2 [Best Univariate Time Series Model](#best_uni_model)<br>
+     		&emsp; &nbsp;6.6.3 [Best Multivariate Time Series Model](#best_multi_model)<br>
+   		&emsp; &nbsp;6.6.4 [Research Question's Solution](#solution)<br>
 7. [Deployment](#deployment)<br>
 8. [Conclusions](#conclusions)<br>
 9. [Bibliography](#bibliography)<br>
@@ -1816,6 +1818,8 @@ Then, the WALMEX net sales forecasts were estimated using the two approaches def
 
 In both cases, the net sales were forecasted over a period of ten years (2024Q1-2033Q4).
 
+<br>
+
 #### **6.6.1 Models Ranking** <a class="anchor" id="ranking"></a>
 
 According to the model assessment performed to each model, the models were ranked in terms of the scores RMSE, MAR and $r^{2}$.
@@ -1839,8 +1843,8 @@ In the case of the multivariate models, the scores are as follows:
 
 |   | Model  | RMSE                                              | MAE                                               | Coeff. of Determination                           |
 | - | ------ | ------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------- |
-| 0 | VAR    | [41.68363399538274, 741.6975334422666, 7.84074... | [30.27016894936554, 699.7044134829706, 6.13388... | [0.7500587264511199, -9.351694912545407, -7.68... |
 | 1 | VARMA  | [29.895275196270124, 806.357115051538, 8.35249... | [26.241590913676305, 763.0903497943536, 7.0409... | [0.8714382007640038, -11.235244127649448, -8.8... |
+| 0 | VAR    | [41.68363399538274, 741.6975334422666, 7.84074... | [30.27016894936554, 699.7044134829706, 6.13388... | [0.7500587264511199, -9.351694912545407, -7.68... |
 | 2 | VARIMA | [57.60360726976815, 939.2783902259093, 14.0402... | [42.57743313428142, 898.3375517962176, 12.2627... | [0.522683780550852, -15.601466594952402, -26.8... |
 
 Thus, in view of the results above, the **$\text{VARMA}(1, 1)$ model** was the multivariate time series model with the best performance in terms of the scores RMSE, MAR and $r^{2}$.
@@ -1849,13 +1853,32 @@ Finally, the scores from the regression models is shown below:
 
 |   | Model | RMSE        | MAE         | Coeff. of Determination |
 | - | ----- | ----------- | ----------- | ----------------------- |
-| 0 | RF    | 16256.43347 | 12380.448   | 0.515834                |
 | 1 | SVR   | 14535.5817  | 10676.18385 | 0.401998                |
+| 0 | RF    | 16256.43347 | 12380.448   | 0.515834                |
 
 Overall, both regression models have a very similar performance. However, as the RF model may be forced to predict net sales values far outside the training range, the SVR was selected as the best performing model.
 
+<br>
 
 #### **6.6.2 Best Univariate Time Series Model** <a class="anchor" id="best_uni_model"></a>
+
+The $\text{SARIMA}(1,1,1)(1,1,1)_{4}$ model, which was the best performing univariate time series model, was retrained with all the available data to, then, generate the forecasts of the WALMEX net sales over the next ten years.
+
+<br>
+
+#### **6.6.3 Best Univariate Time Series Model** <a class="anchor" id="best_multi_model"></a>
+
+Then, the $\text{VARMA}(1,1)$ model, which was the best performing multivariate time series model, was retrained with all the available data to generate the forecasts of the predictors *units*, *S&P500*, and *WALMEX* stock value, over the next ten years:
+
+<p align="center">
+	<img src="Images/fig_predictions_from_predictors_forecasts_from_varma_model_vs_historical_time_series.png?raw=true" width=70% height=60%>
+</p>
+
+In turn, the above forecasts were used to predict the WALMEX net sales with the SVR model.
+
+<br>
+
+#### **6.6.4 Research Question's Solution** <a class="anchor" id="solution"></a>
 
 Pending...
 
