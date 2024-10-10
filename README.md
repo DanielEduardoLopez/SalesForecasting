@@ -1913,4 +1913,14 @@ ____
 <a class="anchor" id="conclusions"></a>
 ### **8. Conclusions**
 
+According to the results from the present study, **Walmart of Mexico (WALMEX) will meet its goal of doubling its sales from 211,436 mdp to 424,050 mdp in the third quarter of 2033**, in about nine years, according to the fitted $\text{SARIMA}(1,1,1)(1,1,1)_{4}$ model. 
+
+Moreover, the combination of a VARMA model for forecasting economic variables and the SVR model for predicting the net sales based on the forecasts of the first proved to be unsucessful. Whereas a more traditional approach of a SARIMA model was more able to capture the trend and seasonality of the WALMEX net sales time series.
+
+In this context, as future perspectives, it is suggested to further explore how to automate the collection of WALMEX net sales data for building an model that can be retrained and yield predictions each time a new data point is added to the time series.
+
+____
+<a class="anchor" id="references"></a>
+### **9. References**
+
 Pending...
