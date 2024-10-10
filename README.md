@@ -1902,7 +1902,12 @@ ____
 
 According to the above results, the best performing model was $\text{SARIMA}(1,1,1)(1,1,1)_{4}$, which was a univariate time series model fitted from the historical net sales data of WALMEX.
 
-For the deployment, it was proposed to put said model into production using the Streamlit cloud services. Please click <a href="https://sales-forecasting-walmart-mx.streamlit.app/">here</a> to play with the interactive app.
+For the deployment, it was proposed to put said model into production using the Streamlit cloud services. Please click <a href="https://sales-forecasting-walmart-mx.streamlit.app/">here</a> to play with the interactive app:
+
+<p align="center">
+	<img src="Images/app_screenshot.png?raw=true" width=70% height=60%>
+</p>
+
 
 ____
 <a class="anchor" id="conclusions"></a>
