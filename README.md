@@ -1942,4 +1942,16 @@ ____
 <a class="anchor" id="files"></a>
 ### **10. Description of Files in Repository**
 
-Pending...
+File | Description
+:--- | :---
+SalesForecasting.ipynb | Jupyter notebook with the Python code
+SalesForecasting.html | HTML version of the Jupyter notebook
+Walmex_Quarterly_Net_Sales.xlsx | Walmex quarterly net sales
+app.py | Streamlit app
+bonds_rates_data.csv | Treasury bonds rates (CETES 28) data
+dataset_processed.csv | Complete processed dataset
+exchange_rates_data.csv | USD/MXN exchange rates data
+gdp_data.json | GDP dataset
+inflation_data.json | Mexico's inflation data
+interest_rates_data.csv | Mexico's representative interest rates (28 day TIIE)
+requirements.txt | Python requirements file
