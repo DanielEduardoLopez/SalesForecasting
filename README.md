@@ -45,7 +45,7 @@ ____
    		&emsp; &nbsp;6.6.4 [Research Question's Solution](#solution)<br>
 7. [Deployment](#deployment)<br>
 8. [Conclusions](#conclusions)<br>
-9. [Bibliography](#bibliography)<br>
+9. [References](#references)<br>
 10. [Description of Files in Repository](#files)<br>
 
 ____
@@ -1923,4 +1923,35 @@ ____
 <a class="anchor" id="references"></a>
 ### **9. References**
 
-Pending...
+* <a class="anchor" id="atwan"></a>**Atwan, T. A. (2022)**. *Time Series Analysis with Python Cookbook*. Packt Publishing Ltd.
+* <a class="anchor" id="brownlee"></a>**Brownlee, J. (2020)**. *How to Decompose Time Series Data into Trend and Seasonality*. https://machinelearningmastery.com/decompose-time-series-data-trend-seasonality/
+* <a class="anchor" id="chapman"></a>**Chapman, P., Clinton, J., Kerber, R., Khabaza, T., Reinartz, T., Shearer, C., & Wirth, R. (2000)**. *CRISP-DM 1.0: Step-by-step data mining guide*. CRISP-DM consortium. https://api.semanticscholar.org/CorpusID:59777418
+* <a class="anchor" id="clower"></a>**Clower, E. (2020)**. *A Guide to Conducting Cointegration Tests*. https://www.aptech.com/blog/a-guide-to-conducting-cointegration-tests/
+* <a class="anchor" id="geron"></a>**Géron, A. (2019)**. *Hands-on Machine Learning with Scikit-Learn, Keras & TensorFlow* (2nd ed.). O’Reilly Media, Inc.
+* <a class="anchor" id="herzen"></a>**Herzen, J.,  Lassig, F., Giuliano-Piazzetta, S., Neuer, T., Tafti, L., Raille, G., Van Pottelbergh, T., Pasieka, M., Skrodzki, A., Huguenin, N., Dumonal, M., Koscisz, J., Bader, D., Gusset, F., Benheddi, M., Williamson, C., Kosinski, M., Petrik, M. & Grosch, G.  (2022)**. Darts: User-Friendly Modern Machine Learning for Time Series. *Journal of Machine Learning Research*. 23(124):1-6. http://jmlr.org/papers/v23/21-1177.html
+* <a class="anchor" id="kotze"></a>**Kotzé, K. (2024)**. *Cointegration*. https://github.com/EconMaett/TSA/blob/main/T13-multivariate-cointegration/14_cointegration_slides.pdf
+* <a class="anchor" id="kulkarni"></a>**Kulkarni, A. R., Shivananda, A., Kulkarni, A., & Krishnan, V. A. (2023)**. *Time Series Algorithms Recipes: Implement Machine Learning and Deep Learning Techniques with Python*. Apress Media, LLC. https://doi.org/10.1007/978-1-4842-8978-5
+* <a class="anchor" id="jamieson"></a>**Jamieson, S. (2019)**. *Time Series Decomposition & Prediction in Python*. https://www.linkedin.com/pulse/time-series-decomposition-prediction-python-stuart-jamieson-cfa-frm
+* <a class="anchor" id="nist"></a>**NIST/SEMATECH (2012)**. *e-Handbook of Statistical Methods*. https://www.itl.nist.gov/div898/handbook/prc/section1/prc16.htm 
+* <a class="anchor" id="peixeiro"></a>**Peixeiro, M. (2022)**. *Time Series Forecasting in Python*. Manning Publications Co. 
+* <a class="anchor" id="rollins"></a> **Rollins, J. B. (2015)**. *Metodología Fundamental para la Ciencia de Datos. Somers: IBM Corporation.* https://www.ibm.com/downloads/cas/WKK9DX51
+* <a class="anchor" id="walmex"></a>**Wal-Mart de México S.A.B. de C.V. (2024)**. *Información Financiera Trimestral 4T*. https://files.walmex.mx/upload/files/2023/ES/Trimestral/4T23/WALMEX_4T23_BMV.pdf
+* <a class="anchor" id="wang"></a>**Wang, L. (2018)**. *Cointegration and Pairs Trading*. https://letianzj.github.io/cointegration-pairs-trading.html
+
+____
+<a class="anchor" id="files"></a>
+### **10. Description of Files in Repository**
+
+File | Description
+:--- | :---
+SalesForecasting.ipynb | Jupyter notebook with the Python code
+SalesForecasting.html | HTML version of the Jupyter notebook
+Walmex_Quarterly_Net_Sales.xlsx | Walmex quarterly net sales
+app.py | Streamlit app
+bonds_rates_data.csv | Treasury bonds rates (CETES 28) data
+dataset_processed.csv | Complete processed dataset
+exchange_rates_data.csv | USD/MXN exchange rates data
+gdp_data.json | GDP dataset
+inflation_data.json | Mexico's inflation data
+interest_rates_data.csv | Mexico's representative interest rates (28 day TIIE)
+requirements.txt | Python requirements file
