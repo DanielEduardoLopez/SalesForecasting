@@ -204,7 +204,7 @@ with col1:
     st.image("Picture.jpg")
 
 with col2:
-    st.markdown("Hi! I'm Eduardo, senior data analyst at AstraZeneca. I love learning, and this is a personal project to play with time series analysis. :chart_with_upwards_trend: :computer:")
+    st.markdown("Hi! I'm Eduardo, senior data analyst at Novartis. I love learning, and this is a personal project to play with time series analysis. :chart_with_upwards_trend: :computer:")
 
 st.sidebar.markdown("")
 
