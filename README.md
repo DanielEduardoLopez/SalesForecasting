@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="Images/Header.png?raw=true" width=80% height=80%>
+	<img src="references/Header.png?raw=true" width=80% height=80%>
 </p>
 
 # Sales Forecasting for Walmart in Mexico
@@ -175,19 +175,19 @@ The prepared dataset was explored to calculate simple statistical measures, iden
 A high-level view of the time series for all the features is shown below:
 
 <p align="center">
-	<img src="Images/fig_variables_over_time.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_variables_over_time.png?raw=true" width=70% height=60%>
 </p>
 
 Moreover, it could be seen that the variables **units**, **S&P500**, **WALMEX stock**, and **net sales** have a positive relationship; whereas the **GDP** and **interest rates** showed a moderate positive relationship:
 
 <p align="center">
-	<img src="Images/fig_variables_distributions_and_relationships.png?raw=true" width=90% height=90%>
+	<img src="reports/figures/fig_variables_distributions_and_relationships.png?raw=true" width=90% height=90%>
 </p>
 
 Furthermore, it could be seen that the correlation among **net sales**, **units**, **WALMEX stock**, and **S&P500** was strong; whereas **GDP**, **interest rates** and **IPC** were moderately correlated. In contrast, **exchange rates**, **GDP** and **IPC** were weakly correlated:
 
 <p align="center">
-	<img src="Images/fig_correlation_matrix.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_correlation_matrix.png?raw=true" width=70% height=60%>
 </p>
 
 Then, the stationarity of the net sales time series was assessed by testing for unit roots with the **Augmented Dickey-Fuller (ADF) test** [(Peixeiro, 2022)](#peixeiro), using a 95% confidence level: 
@@ -208,7 +208,7 @@ As the $p\text{-}value > 0.05$ then the null hypothesis cannot be rejected. So, 
 In this context, the net sales data was transformed using **differencing** to stabilize the trend and seasonality [(Peixeiro, 2022)](#peixeiro):
 
 <p align="center">
-	<img src="Images/fig_first-order_differenced_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_first-order_differenced_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 ```bash
@@ -221,7 +221,7 @@ Even though the ADF statistic is now negative, the $p\text{-}value > 0.05$, so t
 Thus, the net sales were transformed again with a second-order differencing, and the ADF test was applied once more.
 
 <p align="center">
-	<img src="Images/fig_second-order_differenced_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_second-order_differenced_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 ```bash
@@ -321,19 +321,19 @@ Thus, with the first-order differencing was enough to render all the macroeconom
 Later, the autocorrelation of the net sales time series was assessed by means of the Autorcorrelation Function (ACF) plot, to explore the significant coefficients/lags in the series:
 
 <p align="center">
-	<img src="Images/fig_net_sales_autocorrelation.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_net_sales_autocorrelation.png?raw=true" width=70% height=60%>
 </p>
 
 Thus, according to the ACF plot, the lags 2, 3, 4, and 5 are significant, which means that the time series is actually dependent on its past values.
 
 <p align="center">
-	<img src="Images/fig_first-order_differenced_net_sales_autocorrelation.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_first-order_differenced_net_sales_autocorrelation.png?raw=true" width=70% height=60%>
 </p>
 
 For the first-order differenced net sales autocorrelation plot, as there are no consecutive significant lags after lag 2, it is possible to state that the first-order differenced net sales is autocorrelated only at lags 1 and 2.
 
 <p align="center">
-	<img src="Images/fig_second-order_differenced_net_sales_autocorrelation.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_second-order_differenced_net_sales_autocorrelation.png?raw=true" width=70% height=60%>
 </p>
 
 Likewise, as there are no consecutive significant lags after lag 2, it is possible to state that the second-order differenced net sales is autocorrelated only at lags 1 and 2, too. However, it is clear that the overall trend of the ACF follows a sinusoidal-like pattern. This is evidence that the time series is autorregressive [(Pexerio, 2022)](#peixeiro).
@@ -345,7 +345,7 @@ As part of the explotatory data analysis, the WALMEX net sales series was decomp
 Firstly, an **additive decomposition** was performed:
 
 <p align="center">
-	<img src="Images/fig_additive_decomposition_for_walmex_net_sales_training_set.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_additive_decomposition_for_walmex_net_sales_training_set.png?raw=true" width=70% height=60%>
 </p>
 
 From the plot above, it is clear that the WALMEX net sales adjusted very well to a additive model, as the trend is a straight line with a positive slope, and the seasonality could be isolated very well from the series exhibiting both regular frequency (with a cycle number of 4) and amplitude.
@@ -353,7 +353,7 @@ From the plot above, it is clear that the WALMEX net sales adjusted very well to
 Then, a **multiplicative decomposition** was performed as well on the series:
 
 <p align="center">
-	<img src="Images/fig_multiplicative_decomposition_for_walmex_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_multiplicative_decomposition_for_walmex_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 As the residuals in the multiplicative decomposition show an uniform value, this is an indication that the decomposition failed to properly capture all the information from the series. So, this decomposition approach is not appropriate.
@@ -454,7 +454,7 @@ Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecast
 The predictions were plot against the historical net sales data to visually assess the performance of the MA model.
 
 <p align="center">
-	<img src="Images/fig_predictions_from_ma_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_ma_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 In view of the plot above, the MA model was able to capture the trend of the time series but not their stationality.
@@ -486,7 +486,7 @@ The dataset was split into a training and a testing sets, allocating 80% and 20%
 Then, the order for each AR Model was identified by using the **partial autocorrelation function (PACF) plot** to assess the effect of past data (the so-called lags) on future data [(Kulkarni, Shivananda, Kulkarni, & Krishnan, 2023)](#kulkarni).
 
 <p align="center">
-	<img src="Images/fig_partial_autocorrelation_for_second-order_differenced_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_partial_autocorrelation_for_second-order_differenced_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 So, the order of the AR model for the trend component was defined as 3.
@@ -502,7 +502,7 @@ Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecast
 The predictions were plot against the historical net sales data to visually assess the performance of the AR model.
 
 <p align="center">
-	<img src="Images/fig_predictions_from_ar_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_ar_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 In view of the plot above, the AR model was able to capture both the trend and the stationality of the time series.
@@ -545,7 +545,7 @@ Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecast
 Likewise, the predictions were plot against the historical net sales data to visually assess the performance of the AR models with additive decomposition.
 
 <p align="center">
-	<img src="Images/fig_predictions_from_ar_models_with_additive_decomposition_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_ar_models_with_additive_decomposition_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 In view of the plot above, the additive decomposition and the AR models were able to provide closer predictions for the WALMEX net sales.
@@ -637,7 +637,7 @@ To do so, the residual analysis was performed in two steps [(Peixeiro, 2022)](#p
 * **Ljung-Box test**: To test whether the residuals from the model are uncorrelated.
 
 <p align="center">
-	<img src="Images/fig_diagnostic_plots_for_standardized_residuals_from_arma_model.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_diagnostic_plots_for_standardized_residuals_from_arma_model.png?raw=true" width=70% height=60%>
 </p>
 
 From the diagnostics plots, the residuals are not completely normally distributed. However, it was considered that the results were good enough for the purposes of the present study, as other more sophisticated models were fit below.
@@ -668,7 +668,7 @@ For each of the lags from 1 to 10, the $p\text{-}values$ were above $0.05$. Thus
 Likewise, the predictions were plot against the historical net sales data to visually assess the performance of the AR models with additive decomposition.
 
 <p align="center">
-	<img src="Images/fig_predictions_from_arma_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_arma_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 In view of the plot above, the ARMA model was able to provide very close predictions for the WALMEX net sales.
@@ -762,7 +762,7 @@ To do so, the residual analysis was performed in two steps [(Peixeiro, 2022)](#p
 * **Ljung-Box test**: To test whether the residuals from the model are uncorrelated.
 
 <p align="center">
-	<img src="Images/fig_diagnostic_plots_for_standardized_residuals_from_arima_model.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_diagnostic_plots_for_standardized_residuals_from_arima_model.png?raw=true" width=70% height=60%>
 </p>
 
 From the diagnostics plots, the residuals are not completely normally distributed. However, it was considered that the results were good enough for the purposes of the present study.
@@ -793,7 +793,7 @@ For each of the lags from 1 to 10, the $p\text{-}values$ were well above $0.05$.
 Likewise, the predictions were plot against the historical net sales data to visually assess the performance of the ARIMA model.
 
 <p align="center">
-	<img src="Images/fig_predictions_from_arima_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_arima_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 In view of the plot above, is seems that the ARIMA model was not able to capture the seasonality of the time series. Notably, the ARMA model was able to yield even better predictions.
@@ -908,7 +908,7 @@ To do so, the residual analysis was performed in two steps [(Peixeiro, 2022)](#p
 * **Ljung-Box test**: To test whether the residuals from the model are uncorrelated.
 
 <p align="center">
-	<img src="Images/fig_diagnostic_plots_for_standardized_residuals_from_sarima_model.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_diagnostic_plots_for_standardized_residuals_from_sarima_model.png?raw=true" width=70% height=60%>
 </p>
 
 From the diagnostics plots, the residuals are not completely normally distributed. However, it was considered that the results were good enough for the purposes of the present study.
@@ -939,7 +939,7 @@ For each of the lags from 1 to 10, the $p\text{-}values$ were above $0.05$. Thus
 Later, the predictions were plot against the historical net sales data to visually assess the performance of the SARIMA model.
 
 <p align="center">
-	<img src="Images/fig_predictions_from_sarima_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_sarima_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 In view of the plot above, the SARIMA model was able to neatly capture the trend and seasonality of the time series. So far, the best performance obtained.
@@ -1057,7 +1057,7 @@ To do so, the residual analysis was performed in two steps [(Peixeiro, 2022)](#p
 * **Ljung-Box test**: To test whether the residuals from the model are uncorrelated.
 
 <p align="center">
-	<img src="Images/fig_diagnostic_plots_for_standardized_residuals_from_sarimax_model.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_diagnostic_plots_for_standardized_residuals_from_sarimax_model.png?raw=true" width=70% height=60%>
 </p>
 
 From the diagnostics plots, the residuals are not completely normally distributed. However, it was considered that the results were good enough for the purposes of the present study.
@@ -1088,7 +1088,7 @@ For each of the lags from 1 to 10, the $p\text{-}values$ were above $0.05$. Thus
 Later, the predictions were plot against the historical net sales data to visually assess the performance of the SARIMA model.
 
 <p align="center">
-	<img src="Images/fig_predictions_from_sarimax_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_sarimax_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 In view of the plot above, the SARIMAX model was able to capture the trend and seasonality of the time series. However, its performance was inferior to that from the SARIMA model.
@@ -1124,7 +1124,7 @@ Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecast
 Likewise, the predictions were plot against the historical net sales data to visually assess the performance of the SES model.
 
 <p align="center">
-	<img src="Images/fig_predictions_from_ses_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_ses_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 In view of the plot above, as expectable, the SES model was not able to capture neither the trend nor the seasonality of the time.
@@ -1161,7 +1161,7 @@ Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecast
 After that, the predictions were plot against the historical net sales data to visually assess the performance of the HW model.
 
 <p align="center">
-	<img src="Images/fig_predictions_from_hw_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_hw_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 In view of the plot above, the HW model performed notably better than the SES model, as it was able to capture both the trend and seasonality of the WALMEX net sales series.
@@ -1266,7 +1266,7 @@ Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecast
 The WALMEX Net Sales Forecast Components from Prophet Model are shown below:
 
 <p align="center">
-	<img src="Images/fig_walmex_net_sales_forecast_components_from_prophet_model.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_walmex_net_sales_forecast_components_from_prophet_model.png?raw=true" width=70% height=60%>
 </p>
 
 Thus, according to the chart above, the model has detected strong seasonalities in the WALMEX net sales at the beginning and at the end of the year, which may correspond to several important holidays in Mexico such as the Independence Day and Christmas.
@@ -1274,7 +1274,7 @@ Thus, according to the chart above, the model has detected strong seasonalities 
 After that, the predictions were plot against the historical net sales data to visually assess the performance of the Prophet model.
 
 <p align="center">
-	<img src="Images/fig_predictions_from_prophet_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_prophet_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 In view of the plot above, the Prophet model performed well as it was able to capture both the trend and seasonality of the WALMEX net sales series.
@@ -1381,15 +1381,15 @@ To do so, the residual analysis was performed in two steps [(Peixeiro, 2022)](#p
 * **Ljung-Box test**: To test whether the residuals from the model are uncorrelated.
 
 <p align="center">
-	<img src="Images/fig_q-q_plot_for_standardized_residuals_for_units_series_from_var_model.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_q-q_plot_for_standardized_residuals_for_units_series_from_var_model.png?raw=true" width=70% height=60%>
 </p>
 
 <p align="center">
-	<img src="Images/fig_q-q_plot_for_standardized_residuals_for_sp500_series_from_var_model.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_q-q_plot_for_standardized_residuals_for_sp500_series_from_var_model.png?raw=true" width=70% height=60%>
 </p>
 
 <p align="center">
-	<img src="Images/fig_q-q_plot_for_standardized_residuals_for_walmex_series_from_var_model.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_q-q_plot_for_standardized_residuals_for_walmex_series_from_var_model.png?raw=true" width=70% height=60%>
 </p>
 
 From the q-q plots above, it is clear that the standardized residuals for the series *units* and *SP&500* did not follow a normal distribution, which means that the VAR model was not able to capture some information from the data. Despite this result, the analysis continued below.
@@ -1407,7 +1407,7 @@ For each of the lags from 1 to 10, the $p\text{-}values$ were above $0.05$ (plea
 Later, the predictions were plot against the historical net sales data to visually assess the performance of the VAR model.
 
 <p align="center">
-	<img src="Images/fig_predictions_from_var_model_vs_historical_time_series.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_var_model_vs_historical_time_series.png?raw=true" width=70% height=60%>
 </p>
 
 In view of the plots above, it can be seen that the VAR model was not able to yield accurate predictions. The only economic indicator whose predictions were more or less accurately was *units*. However, it is important to bear in mind that the COVID pandemic disrupted the historical trends not only in Mexico, but in the entire world. So, fairly, it was very dificult to expect that the VAR model could provide accurate predictions for the years 2021-2023 using the data from 2014-2020 for training.
@@ -1536,15 +1536,15 @@ To do so, the residual analysis was performed in two steps [(Peixeiro, 2022)](#p
 * **Ljung-Box test**: To test whether the residuals from the model are uncorrelated.
 
 <p align="center">
-	<img src="Images/fig_q-q_plot_for_standardized_residuals_for_unit_series_from_varma_model.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_q-q_plot_for_standardized_residuals_for_unit_series_from_varma_model.png?raw=true" width=70% height=60%>
 </p>
 
 <p align="center">
-	<img src="Images/fig_q-q_plot_for_standardized_residuals_for_sp&500_series_from_varma_model.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_q-q_plot_for_standardized_residuals_for_sp&500_series_from_varma_model.png?raw=true" width=70% height=60%>
 </p>
 
 <p align="center">
-	<img src="Images/fig_q-q_plot_for_standardized_residuals_for_walmex_series_from_varma_model.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_q-q_plot_for_standardized_residuals_for_walmex_series_from_varma_model.png?raw=true" width=70% height=60%>
 </p>
 
 From the plots above, it seems that the standardized residuals for the series have no trend and constant variance. The histograms also fairly resemble a normal distribution. Moreover, the Q-Q plots show almost straight lines. Finally, the correlograms show no significant coefficients. Thus, it is possible to conclude that the residuals were close to white noise.
@@ -1562,7 +1562,7 @@ For each of the lags from 1 to 10, the $p\text{-}values$ were above $0.05$ (plea
 Later, the predictions were plot against the historical net sales data to visually assess the performance of the VAR model.
 
 <p align="center">
-	<img src="Images/fig_predictions_from_varma_model_vs_historical_time_series.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_varma_model_vs_historical_time_series.png?raw=true" width=70% height=60%>
 </p>
 
 In view of the plot above, it can be seen that the VARMA model was not able to yield accurate predictions. The only economic indicator whose predictions were accurately was *units*. However, it is important to bear in mind that the COVID pandemic disrupted the historical trends not only in Mexico, but in the entire world. So, fairly, it was very dificult to expect that the VARMA model could provide accurate predictions for the years 2021-2023 using the data from 2014-2020 for training. Overall, it seems that the performance of the VARMA model was better than that of the VAR model.
@@ -1673,7 +1673,7 @@ For the lag 1, the $p\text{-}values$ were above $0.05$ (please refer to the <a h
 Of course, strictly speaking, as the residual analysis could not be properly performed, it is not possible to know whether the model is valid or not. However, for the purposes of the present study, the model was still used for generating predictions.
 
 <p align="center">
-	<img src="Images/fig_predictions_from_varima_model_vs_historical_time_series.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_varima_model_vs_historical_time_series.png?raw=true" width=70% height=60%>
 </p>
 
 In view of the plots above, it can be seen that the VARIMA model was not able to yield accurate predictions. The only economic indicator whose predictions were more less accurate was *units*. However, it is important to bear in mind that the COVID pandemic disrupted the historical trends not only in Mexico, but in the entire world. So, fairly, it was very dificult to expect that the VARMA model could provide accurate predictions for the years 2021-2023 using the data from 2014-2020 for training. Notwithstanding with the above, it seems that the performance of the VARIMA model was slightly worse than that of the VARMA model.
@@ -1721,13 +1721,13 @@ Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecast
 After modeling, it was observed that the feature **Units** was the most important in the model:
 
 <p align="center">
-	<img src="Images/fig_feature_importances_in_random_forest_regression_model.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_feature_importances_in_random_forest_regression_model.png?raw=true" width=70% height=60%>
 </p>
 
 Later, the predictions were plot against the historical net sales data to visually assess the performance of the RF model.
 
 <p align="center">
-	<img src="Images/fig_predictions_from_rf_model_vs._walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_rf_model_vs._walmex_historical_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 From the plot above, it can be seen that the predictions are very close of the historical time series. Thus, the Random Forest regression model was able to capture the most important features for predicting the net sales of WALMEX. 
@@ -1776,7 +1776,7 @@ Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecast
 Later, the predictions were plot against the historical net sales data to visually assess the performance of the SVR model.
 
 <p align="center">
-	<img src="Images/fig_predictions_from_svr_model_vs._walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_svr_model_vs._walmex_historical_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 From the plot above, it can be seen that the predictions are close of the historical time series. Thus, the SVR model was able to capture the most important features for predicting the net sales of WALMEX. 
@@ -1871,7 +1871,7 @@ The $\text{SARIMA}(1,1,1)(1,1,1)_{4}$ model, which was the best performing univa
 Then, the $\text{VARMA}(1,1)$ model, which was the best performing multivariate time series model, was retrained with all the available data to generate the forecasts of the predictors *units*, *S&P500*, and *WALMEX* stock value, over the next ten years:
 
 <p align="center">
-	<img src="Images/fig_predictions_from_predictors_forecasts_from_varma_model_vs_historical_time_series.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_predictors_forecasts_from_varma_model_vs_historical_time_series.png?raw=true" width=70% height=60%>
 </p>
 
 In turn, the above forecasts were used to predict the WALMEX net sales with the SVR model.
@@ -1883,11 +1883,11 @@ In turn, the above forecasts were used to predict the WALMEX net sales with the 
 Now, after all the modeling and evaluation, the predictions from the univariate and multivariate/regression models were assessed visually, and the sales on 2023Q3 were compared with the forecasts to determine when WALMEX's goal could be achieved (if possible).
 
 <p align="center">
-	<img src="Images/fig_net_sales_forecast_from_univariate_model.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_net_sales_forecast_from_univariate_model.png?raw=true" width=70% height=60%>
 </p>
 
 <p align="center">
-	<img src="Images/fig_net_sales_forecast_from_multivariate-regression_models.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_net_sales_forecast_from_multivariate-regression_models.png?raw=true" width=70% height=60%>
 </p>
 
 Thus, in view of the results from this study, according to the $\text{SARIMA}(1,1,1)(1,1,1)_{4}$ model, **WALMEX will double its net sales in 2033Q3**, with a forecasted figure of about $424,049.66 (mdp).
@@ -1905,7 +1905,7 @@ According to the above results, the best performing model was $\text{SARIMA}(1,1
 For the deployment, it was proposed to put said model into production using the Streamlit cloud services. Please click <a href="https://sales-forecasting-walmart-mx.streamlit.app/">here</a> to play with the interactive app:
 
 <p align="center">
-	<img src="Images/app_screenshot.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/app_screenshot.png?raw=true" width=70% height=60%>
 </p>
 
 
