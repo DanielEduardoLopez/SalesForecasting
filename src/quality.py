@@ -3,9 +3,11 @@ Collection of functions for assessing data quality, such as missing values and o
 
 """
 
+from typing import Tuple, Literal
+
 import pandas as pd
 import numpy as np
-from typing import Tuple, Literal
+
 
 
 def get_missing_values_summary(df: pd.DataFrame) -> pd.DataFrame:
