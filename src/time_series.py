@@ -3,13 +3,21 @@ Collection of functions for assessing, testing and modeling time series.
 
 """
 
-from typing import Literal
+# Libraries importation
 
+from typing import Literal, Tuple, List
+
+import numpy as np
 import pandas as pd
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.vector_ar.vecm import coint_johansen
+from sklearn.metrics import r2_score
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_squared_error
 
 
+
+# Functions
 
 def test_stationarity(df: pd.DataFrame, alpha: Literal[10, 5, 1] = 5) -> None:
     """
@@ -83,3 +91,49 @@ def test_cointegration(time_series: pd.DataFrame, det_order: Literal[-1, 0, 1] =
         results_table = pd.DataFrame(result_dict)  
 
         return results_table
+
+
+def calculate_scores(predictions: pd.DataFrame, actuals: pd.DataFrame) -> Tuple[List[float], List[float], List[float]]:
+        """
+        Calculates the RMSE, the MAE and the Coefficient of Determination (r-squared) for a given set of predictions according to the provided actuals.
+
+        Parameters:
+        predictions (pandas.DataFrame): Time series predictions for testing period.
+        actuals (pandas.DataFrame): Time series actual values for testing period.
+
+        Returns:
+        rmse (List[float]): Root Mean Squared Error of the predictions.
+        mae (List[float]): Mean Absolute Error of the predictions.
+        coeff_det (List[float]): Coefficient of determination (r^2) of the predictions.
+        """
+
+        rmse = []
+        mae = []
+        coeff_det = []
+
+        if len(actuals) == len(predictions):
+                        
+                for i in range(0, actuals.shape[1]):
+
+                        print(f'{actuals.columns[i]}')
+
+                        rmse_value = np.sqrt(mean_squared_error(actuals.iloc[:,i].values, predictions.iloc[:,i].values))
+                        mae_value = mean_absolute_error(actuals.iloc[:,i].values, predictions.iloc[:,i].values)
+                        coeff_det_value = r2_score(actuals.iloc[:,i].values, predictions.iloc[:,i].values)
+
+                        print(f'RMSE: {rmse_value:.3f}')
+                        print(f'MAE: {mae_value:.3f}')
+                        print(f'Coefficient of Determination: {coeff_det_value:.3f}\n')
+
+                        rmse.append(rmse_value)
+                        mae.append(mae_value)
+                        coeff_det.append(coeff_det_value)
+
+                return rmse, mae, coeff_det
+                
+
+        else:
+
+                print('Number of features is different between the testing set and the predictions set.')
+
+
