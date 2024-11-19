@@ -6,6 +6,7 @@ Collection of functions for assessing, testing and modeling time series.
 # Libraries importation
 
 from typing import Literal, Tuple, List
+from itertools import product
 
 import numpy as np
 import pandas as pd
@@ -14,6 +15,7 @@ from statsmodels.tsa.vector_ar.vecm import coint_johansen
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
+from statsmodels.tsa.arima.model import ARIMA
 
 
 
@@ -137,3 +139,95 @@ def calculate_scores(predictions: pd.DataFrame, actuals: pd.DataFrame) -> Tuple[
                 print('Number of features is different between the testing set and the predictions set.')
 
 
+def optimize_arma_model(p: range, q: range, time_series: pd.Series) -> ARIMA:
+        """
+        Optimize an autoregressive moving average (ARMA) model given a set of p and q values, by minimizing the Akaike Information Criterion (AIC).
+
+        Parameters:
+        p (range): Range for order p in the autoregressive portion of the ARMA model.
+        q (range): Range for order q in the moving average portion of the ARMA model.
+        time_series (pandas.Series): Time series data for fitting the ARMA model.
+
+        Returns:
+        arma_model (statsmodels.tsa.arima.model.arima): An ARIMA object fitted according to the combination of p and q that minimizes 
+        the Akaike Information Criterion (AIC).        
+
+        """
+        # Obtaining the combinations of p and q
+        order_list = list(product(p, q))
+
+        # Creating emtpy lists to store results
+        order_results = []
+        aic_results = []
+
+        # Fitting models
+        for order in order_list:
+
+                arma_model = ARIMA(time_series, order = (order[0], 0, order[1])).fit()
+                order_results.append(order)
+                aic_results.append(arma_model.aic)
+        
+        # Converting lists to dataframes
+        results = pd.DataFrame({'(p,q)': order_results,
+                                'AIC': aic_results                                
+                                })        
+        # Storing results from the best model
+        lowest_aic = results.AIC.min()
+        best_model = results.loc[results['AIC'] == lowest_aic, ['(p,q)']].values[0][0]
+
+        # Printing results
+        print(f'The best model is (p = {best_model[0]}, q = {best_model[1]}), with an AIC of {lowest_aic:.02f}.\n')         
+        print(results)     
+
+        # Fitting best model again
+        arma_model = ARIMA(time_series, order = (best_model[0], 0, best_model[1])).fit()
+
+        return arma_model
+
+def optimize_arima_model(p: range, d: int, q: range, time_series: pd.Series) -> ARIMA:
+        """
+        Optimize an autoregressive integrated moving average (ARIMA) model based on the Akaike Information Criterion (AIC), 
+        given a set of p and q values; while keeping the d order constant. 
+
+        Parameters:
+        p (range): Range for order p in the autoregressive portion of the ARIMA model.
+        d (int): Integration order.
+        q (range): Range for order q in the moving average portion of the ARIMA model.
+        time_series (pandas.Series): Time series data for fitting the ARIMA model.
+
+        Returns:
+        arima_model (statsmodels.tsa.arima.model.ARIMA): An ARIMA object fitted according to the combination of p and q that minimizes 
+        the Akaike Information Criterion (AIC).
+        
+
+        """
+        # Obtaining the combinations of p and q
+        order_list = list(product(p, q))
+
+        # Creating emtpy lists to store results
+        order_results = []
+        aic_results = []
+
+        # Fitting models
+        for order in order_list:
+
+                arima_model = ARIMA(time_series, order = (order[0], d, order[1])).fit()
+                order_results.append((order[0], d, order[1]))
+                aic_results.append(arima_model.aic)
+        
+        # Converting lists to dataframes
+        results = pd.DataFrame({'(p,d,q)': order_results,
+                                'AIC': aic_results                                
+                                })        
+        # Storing results from the best model
+        lowest_aic = results.AIC.min()
+        best_model = results.loc[results['AIC'] == lowest_aic, ['(p,d,q)']].values[0][0]
+
+        # Printing results
+        print(f'The best model is (p = {best_model[0]}, d = {d}, q = {best_model[2]}), with an AIC of {lowest_aic:.02f}.\n')         
+        print(results)     
+
+        # Fitting best model again
+        arima_model = ARIMA(time_series, order = (best_model[0], best_model[1], best_model[2])).fit()
+
+        return arima_model
