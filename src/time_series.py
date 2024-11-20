@@ -16,40 +16,41 @@ from sklearn.metrics import r2_score
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
 from statsmodels.tsa.arima.model import ARIMA
-
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+from prophet import Prophet
 
 
 # Functions
 
 def test_stationarity(df: pd.DataFrame, alpha: Literal[10, 5, 1] = 5) -> None:
-    """
-    Tests for stationarity by applying the Augmented Dickey-Fuller (ADF) test to each of the features
-    in the input dataset, at the provided significance level (alpha = 10%, 5%, or 1%).
+        """
+        Tests for stationarity by applying the Augmented Dickey-Fuller (ADF) test to each of the features
+        in the input dataset, at the provided significance level (alpha = 10%, 5%, or 1%).
 
-    Parameters:
-    df (pandas.DataFrame): Dataset with the variables to be tested for stationarity.
-    alpha (Literal[10, 5, 1]): Specified significance level for the ADF test:
-        - 1: Significance level of 1%.
-        - 5: Significance level of 5%. (default)
-        - 10: Significance level of 10%.
+        Parameters:
+        df (pandas.DataFrame): Dataset with the variables to be tested for stationarity.
+        alpha (Literal[10, 5, 1]): Specified significance level for the ADF test:
+                - 1: Significance level of 1%.
+                - 5: Significance level of 5%. (default)
+                - 10: Significance level of 10%.
 
-    Returns:
-    None
-    """
+        Returns:
+        None
+        """
 
-    alpha = float(alpha) / 100
+        alpha = float(alpha) / 100
 
-    for col in df.columns:
-            
-        stationarity_test = adfuller(df[col], autolag='AIC')
-        print(f'{col}:')
-        print(f"ADF statistic: {stationarity_test[0]:.03f}")
-        print(f"P-value: {stationarity_test[1]:.03f}")
+        for col in df.columns:
+                
+                stationarity_test = adfuller(df[col], autolag='AIC')
+                print(f'{col}:')
+                print(f"ADF statistic: {stationarity_test[0]:.03f}")
+                print(f"P-value: {stationarity_test[1]:.03f}")
 
-        if stationarity_test[1] <= alpha:
-            print("The series is stationary.\n")
-        else:
-            print("The series is not stationary.\n")
+                if stationarity_test[1] <= alpha:
+                        print("The series is stationary.\n")
+                else:
+                        print("The series is not stationary.\n")
 
 
 def test_cointegration(time_series: pd.DataFrame, det_order: Literal[-1, 0, 1] = 1, k_ar_diff: int = 1) -> pd.DataFrame:
@@ -184,6 +185,7 @@ def optimize_arma_model(p: range, q: range, time_series: pd.Series) -> ARIMA:
 
         return arma_model
 
+
 def optimize_arima_model(p: range, d: int, q: range, time_series: pd.Series) -> ARIMA:
         """
         Optimize an autoregressive integrated moving average (ARIMA) model based on the Akaike Information Criterion (AIC), 
@@ -231,3 +233,184 @@ def optimize_arima_model(p: range, d: int, q: range, time_series: pd.Series) -> 
         arima_model = ARIMA(time_series, order = (best_model[0], best_model[1], best_model[2])).fit()
 
         return arima_model
+
+
+def optimize_sarima_model(p: range, d: int, q: range, P: range, D: int, Q: range, m: int, time_series: pd.Series) -> SARIMAX:
+        """
+        Optimize a Seasonal Autoregressive Integrated Moving Average (SARIMA) model based on the Akaike Information Criterion (AIC), 
+        given a set of p, q, P, and Q values; while keeping the d and D orders, and the frequency m constant.        
+
+        Parameters:
+        p (range): Range for order p in the autoregressive portion of the SARIMA model.
+        d (int): Integration order.
+        q (range): Range for order q in the moving average portion of the SARIMA model.
+        P (range): Range for order P in the seasonal autoregressive portion of the SARIMA model.
+        D (int): Seasonal integration order.
+        Q (range): Range for order P in the seasonal moving average portion of the SARIMA model.
+        m (int): Number of observations per seasonal cycle.
+        time_series (pandas.Series): Time series data for fitting the SARIMA model.
+
+        Returns:
+        sarima_model (statsmodels.tsa.statespace.sarimax.SARIMAX): An SARIMAX object fitted according to the combination of p, q, P, 
+        and Q values that minimizes the Akaike Information Criterion (AIC).
+        
+
+        """
+        # Obtaining the combinations of p and q
+        order_list = list(product(p, q, P, Q))
+
+        # Creating emtpy lists to store results
+        order_results = []
+        aic_results = []
+
+        # Fitting models
+        for order in order_list:
+
+                sarima_model = SARIMAX(endog=time_series, 
+                                       order = (order[0], d, order[1]),
+                                       seasonal_order=(order[2], D, order[3], m),
+                                       ).fit(disp=False)
+                order_results.append((order[0], d, order[1], order[2], D, order[3], m))
+                aic_results.append(sarima_model.aic)
+        
+        # Converting lists to dataframes
+        results = pd.DataFrame({'(p,d,q)(P,D,Q)m': order_results,
+                                'AIC': aic_results                                
+                                })        
+        # Storing results from the best model
+        lowest_aic = results.AIC.min()
+        best_model = results.loc[results['AIC'] == lowest_aic, ['(p,d,q)(P,D,Q)m']].values[0][0]
+
+        # Printing results
+        print(f'The best model is (p = {best_model[0]}, d = {d}, q = {best_model[2]})(P = {best_model[3]}, D = {D}, Q = {best_model[5]})(m = {m}), with an AIC of {lowest_aic:.02f}.\n')         
+        print(results)     
+
+        # Fitting best model again
+        sarima_model = SARIMAX(endog=time_series, 
+                                order = (best_model[0], d, best_model[2]),
+                                seasonal_order=(best_model[3], D, best_model[5], m),
+                                ).fit(disp=False)
+
+        return sarima_model
+
+
+def optimize_sarimax_model(p: range, d: int, q: range, P: range, D: int, Q: range, m: int, endog: pd.Series, exog: pd.DataFrame) -> SARIMAX:
+        """
+        Optimize a Seasonal Autoregressive Integrated Moving Average with Exogeneous Variables (SARIMAX) model based on the Akaike Information Criterion (AIC), 
+        given a set of p, q, P, and Q values; while keeping the d and D orders, and the frequency m constant.
+
+        Parameters:
+        p (range): Range for order p in the autoregressive portion of the SARIMA model.
+        d (int): Integration order.
+        q (range): Range for order q in the moving average portion of the SARIMA model.
+        P (range): Range for order P in the seasonal autoregressive portion of the SARIMA model.
+        D (int): Seasonal integration order.
+        Q (range): Range for order P in the seasonal moving average portion of the SARIMA model.
+        m (int): Number of observations per seasonal cycle.
+        endog (pandas.Series): Time series of the endogenous variable for fitting the SARIMAX model.
+        exog (pandas.DataFrame): Time series of the exogenous variables for fitting the SARIMAX model.
+
+        Returns:
+        sarimax_model (statsmodels.tsa.statespace.sarimax.SARIMAX): An SARIMAX model object fitted according to the combination of p, q, P, 
+        and Q values that minimizes the Akaike Information Criterion (AIC).
+        
+
+        """
+        # Obtaining the combinations of p and q
+        order_list = list(product(p, q, P, Q))
+
+        # Creating emtpy lists to store results
+        order_results = []
+        aic_results = []
+
+        # Fitting models
+        for order in order_list:
+
+                sarimax_model = SARIMAX(endog=endog, 
+                                        exog=exog,
+                                       order = (order[0], d, order[1]),
+                                       seasonal_order=(order[2], D, order[3], m),
+                                       ).fit(disp=False)
+                order_results.append((order[0], d, order[1], order[2], D, order[3], m))
+                aic_results.append(sarimax_model.aic)
+        
+        # Converting lists to dataframes
+        results = pd.DataFrame({'(p,d,q)(P,D,Q)m': order_results,
+                                'AIC': aic_results                                
+                                })        
+        # Storing results from the best model
+        lowest_aic = results.AIC.min()
+        best_model = results.loc[results['AIC'] == lowest_aic, ['(p,d,q)(P,D,Q)m']].values[0][0]
+
+        # Printing results
+        print(f'The best model is (p = {best_model[0]}, d = {d}, q = {best_model[2]})(P = {best_model[3]}, D = {D}, Q = {best_model[5]})(m = {m}), with an AIC of {lowest_aic:.02f}.\n')         
+        print(results)     
+
+        # Fitting best model again
+        sarimax_model = SARIMAX(endog=endog, 
+                                exog=exog, 
+                                order = (best_model[0], d, best_model[2]),
+                                seasonal_order=(best_model[3], D, best_model[5], m),
+                                ).fit(disp=False)
+
+        return sarimax_model
+
+
+def optimize_prophet_model(time_series: pd.DataFrame, changepoint_prior_scale: List[float], seasonality_prior_scale: List[float], metric: str) -> Prophet:
+        """
+        Optimize an univariate time series model with Prophet, given a set of changepoint_prior_scale and 
+        seasonality_prior_scale values.
+
+        Parameters:
+        changepoint_prior_scale (List[float]): Values for the changepoint_prior_scale hyperparameter in Prophet.
+        seasonality_prior_scale (List[float]): Values for the seasonality_prior_scale hyperparameter in Prophet.        
+        series (pandas.DataFrame): Time series data in two columns: ds for dates in a date datatype, and y for the series.
+        metric (str): Selected performance metric for optimization: One of 'mse', 'rmse', 'mae', 'mdape', or 'coverage'.
+        
+        Returns:
+        m (prophet.Prophet): An Prophet model object optimized according to the combination of tested hyperparameters, by using the 
+        indicated metric.
+        
+        """
+        # Obtaining the combinations of hyperparameters
+        params = list(product(changepoint_prior_scale, seasonality_prior_scale))
+
+        # Creating emtpy lists to store performance results        
+        metric_results = []
+
+        # Defining cutoff dates
+        start_cutoff_percentage = 0.5 # 50% of the data will be used for fitting the model
+        start_cutoff_index = int(round(len(time_series) * start_cutoff_percentage, 0))
+        start_cutoff = time_series.iloc[start_cutoff_index].values[0] 
+        end_cutoff = time_series.iloc[-4].values[0] # The last fourth value is taken as the series is reported in a quarterly basis
+
+        cutoffs = pd.date_range(start=start_cutoff, end=end_cutoff, freq='12M')
+
+        # Fitting models
+        for param in params:
+                m = Prophet(changepoint_prior_scale=param[0], seasonality_prior_scale=param[1])
+                m.add_country_holidays(country_name='MX')
+                m.fit(time_series)
+        
+                df_cv = cross_validation(model=m, horizon='365 days', cutoffs=cutoffs)
+                df_p = performance_metrics(df_cv, rolling_window=1)
+                metric_results.append(df_p[metric].values[0])
+
+        # Converting list to dataframe
+        results = pd.DataFrame({'Hyperparameters': params,
+                                'Metric': metric_results                                
+                                })     
+           
+        # Storing results from the best model
+        best_params = params[np.argmin(metric_results)]
+
+        # Printing results
+        print(f'\nThe best model hyperparameters are changepoint_prior_scale = {best_params[0]}, and seasonality_prior_scale = {best_params[1]}.\n')  
+        print(results)
+
+        # Fitting best model again
+        m = Prophet(changepoint_prior_scale=best_params[0], seasonality_prior_scale=best_params[1])
+        m.add_country_holidays(country_name='MX')
+        m.fit(time_series);        
+
+        return m
