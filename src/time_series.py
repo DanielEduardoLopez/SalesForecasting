@@ -18,6 +18,12 @@ from sklearn.metrics import mean_squared_error
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from prophet import Prophet
+from prophet.diagnostics import cross_validation
+from prophet.diagnostics import performance_metrics
+from statsmodels.tsa.vector_ar.var_model import VAR
+from statsmodels.tsa.statespace.varmax import VARMAX
+from darts.models.forecasting.varima import VARIMA
+from darts import TimeSeries
 
 
 # Functions
@@ -414,3 +420,115 @@ def optimize_prophet_model(time_series: pd.DataFrame, changepoint_prior_scale: L
         m.fit(time_series);        
 
         return m
+
+def optimize_var_model(p: List[int], time_series: pd.DataFrame) -> VAR:
+        """
+        Optimize a Vector Autoregression (VAR) model given a set of lags (p) by minimizing the lowest Akaike Information Criterion (AIC).
+
+        Parameters:
+        p (List[int]): Lag values.
+        time_series (pandas.DataFrame): Time series data.
+
+        Returns:
+        var_model (statsmodels.tsa.vector_ar.var_model.VAR): VAR model object optimized according to the AIC criterion.
+
+        """
+
+        # Creating empty lists to store results
+
+        aic_results = []
+
+        for lag in p:
+                var_model = VAR(endog=time_series).fit(maxlags=lag)
+                aic_results.append(var_model.aic)
+        
+        # Converting lists to dataframes
+        results = pd.DataFrame({'(p)': p,
+                                'AIC': aic_results                                
+                                })        
+        # Storing results from the best model
+        lowest_aic = results.AIC.min()
+        best_model = results.loc[results['AIC'] == lowest_aic, ['(p)']].values[0][0]
+
+        # Printing results
+        print(f'The best model is (p = {best_model}), with an AIC of {lowest_aic:.02f}.\n')         
+        print(results)     
+
+        # Fitting best model again
+        var_model = VAR(endog=time_series).fit(maxlags=best_model)
+
+        return var_model
+
+
+def optimize_varma_model(p: List[int], q: List[int], time_series: pd.DataFrame) -> VARMAX:
+        """
+        Optimize a Vector Autoregressive Moving Average (VARMA) model by minimizing the Akaike Information Criterion (AIC),
+        based on the provided combinations of p and q.
+
+        Parameters:
+        p (List[int]): Orders for the autoregressive process of the model.
+        q (List[int]): Orders for the moving average process of the model.
+        series (pandas.DataFrame): Data for the time series for fitting the model.
+
+        Returns:
+        varma_model (statsmodels.tsa.statespace.varmax.VARMAX): A VARMAX object fitted according to the combination of p and q that minimizes 
+        the Akaike Information Criterion (AIC).
+
+        """
+        
+        # Obtaining the combinations of p and q
+        order_list = list(product(p, q))
+
+        # Creating emtpy lists to store results
+        order_results = []
+        aic_results = []
+
+        # Fitting models
+        for order in order_list:
+
+                varma_model = VARMAX(endog=time_series, order=(order[0], order[1])).fit()
+                order_results.append(order)
+                aic_results.append(varma_model.aic)
+        
+        # Converting lists to dataframes
+        results = pd.DataFrame({'(p,q)': order_results,
+                                'AIC': aic_results                                
+                                })        
+        
+        # Storing results from the best model
+        lowest_aic = results.AIC.min()
+        best_model = results.loc[results['AIC'] == lowest_aic, ['(p,q)']].values[0][0]
+
+        # Printing results
+        print(f'The best model is (p = {best_model[0]}, q = {best_model[1]}), with an AIC of {lowest_aic:.02f}.\n')         
+        print(results)     
+
+        # Fitting best model again
+        varma_model = VARMAX(endog=time_series, order=(best_model[0], best_model[1])).fit()
+
+        return varma_model
+
+
+def fit_varima_model(p: int, d: int, q: int, time_series: pd.DataFrame) -> VARIMA:
+        """
+        Fits a VARIMA model given a set of p, d, and q values.
+
+        Parameters:
+        p (int): Order of the autoregressive process in the model.
+        d (int): Integration order in the model.
+        p (int): Order of the moving average process in the model.
+        series (pandas.DataFrame): Data for the time series for fitting the model.
+
+        Returns:
+        varima_model (darts.models.forecasting.varima.VARIMA): A VARIMA object fitted according to the combination of p, d and q.
+
+
+        """
+        # Converting pandas.DataFrame to Darts.TimeSeries
+        time_series = TimeSeries.from_dataframe(time_series)
+
+        # Fitting VARIMA model
+        varima_model = VARIMA(p=p, d=d, q=q, trend="n") # No trend for models with integration
+        varima_model.fit(time_series)
+
+        return varima_model
