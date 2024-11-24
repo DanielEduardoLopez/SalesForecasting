@@ -7,11 +7,13 @@ Collection of functions for assessing, testing and modeling time series.
 
 from typing import Literal, Tuple, List
 from itertools import product
+from itertools import combinations_with_replacement
 
 import numpy as np
 import pandas as pd
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.vector_ar.vecm import coint_johansen
+from statsmodels.tsa.stattools import grangercausalitytests
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
@@ -100,6 +102,123 @@ def test_cointegration(time_series: pd.DataFrame, det_order: Literal[-1, 0, 1] =
         results_table = pd.DataFrame(result_dict)  
 
         return results_table
+
+
+def test_granger_causality(df: pd.DataFrame, lag: int, alpha: float) -> pd.DataFrame:
+        """
+        Performs the Granger causality tests for each pair of stationary time series, in both directions y2 --> y1 and y1 --> y2.
+
+        Parameters:
+        df (pandas.DataFrame): Stationary time series data.
+        lag (int): Lag for whose value the test is computed. 
+        alpha (float): Desired significance level for the hypothesis test.
+
+        Returns:
+        summary (pandas.DataFrame): Summary results from the Granger causality tests.
+
+        """
+                
+        # Creating empty lists
+        y2 = []
+        y1 = []
+        interpretation = []
+        ssr_ftest_pvalues = []
+        ssr_chi2test_pvalues = []
+        lrtest_pvalues = []
+        params_ftest_pvalues = []
+        gc = []
+
+        # Iterating over series biderectionally
+        arrays = list(combinations_with_replacement(df.columns, 2))
+
+        for array in arrays:
+
+                if array[1] == array[0]:
+                        continue
+                
+                # y2 --> y1
+                print(f'{array[1]} --> {array[0]}')
+                result = grangercausalitytests(df[[array[0],array[1]]], maxlag=[lag])
+                ssr_ftest_pvalue = result[lag][0]['ssr_ftest'][1]
+                ssr_chi2test_pvalue = result[lag][0]['ssr_chi2test'][1]
+                lrtest_pvalue = result[lag][0]['lrtest'][1]
+                params_ftest_pvalue = result[lag][0]['params_ftest'][1]
+
+                y2.append(array[1])
+                y1.append(array[0])
+
+                ssr_ftest_pvalues.append(round(ssr_ftest_pvalue,4))
+                ssr_chi2test_pvalues.append(round(ssr_chi2test_pvalue, 4))
+                lrtest_pvalues.append(round(lrtest_pvalue, 4))
+                params_ftest_pvalues.append(round(params_ftest_pvalue, 4))
+
+                # Test interpretation
+                if ssr_ftest_pvalue <= alpha and ssr_chi2test_pvalue <= alpha and lrtest_pvalue <= alpha and params_ftest_pvalue <= alpha:
+                        result = f'{array[1]} Granger-causes {array[0]}.'
+                        print(f'\n{result}\n\n')
+                        interpretation.append(result)
+                        gc.append('True')
+                
+                elif ssr_ftest_pvalue > alpha and ssr_chi2test_pvalue > alpha and lrtest_pvalue > alpha and params_ftest_pvalue > alpha:
+                        result = f'{array[1]} does not Granger-causes {array[0]}.'
+                        print(f'\n{result}\n\n')
+                        interpretation.append(result)
+                        gc.append('False')
+
+                else:
+                        result = f'Inconsistent results among the tests.'
+                        print(f'\n{result}\n\n')
+                        interpretation.append(result)
+                        gc.append('Uncertain')
+                
+
+                # y1 --> y2
+                print(f'{array[0]} --> {array[1]}')
+                result = grangercausalitytests(df[[array[1],array[0]]], maxlag=[lag])
+                ssr_ftest_pvalue = result[lag][0]['ssr_ftest'][1]
+                ssr_chi2test_pvalue = result[lag][0]['ssr_chi2test'][1]
+                lrtest_pvalue = result[lag][0]['lrtest'][1]
+                params_ftest_pvalue = result[lag][0]['params_ftest'][1]
+
+                y2.append(array[0])
+                y1.append(array[1])
+
+                ssr_ftest_pvalues.append(round(ssr_ftest_pvalue, 4))
+                ssr_chi2test_pvalues.append(round(ssr_chi2test_pvalue, 4))
+                lrtest_pvalues.append(round(lrtest_pvalue, 4))
+                params_ftest_pvalues.append(round(params_ftest_pvalue, 4))
+
+                # Test interpretation
+                if ssr_ftest_pvalue <= alpha and ssr_chi2test_pvalue <= alpha and lrtest_pvalue <= alpha and params_ftest_pvalue <= alpha:
+                        result = f'{array[0]} Granger-causes {array[1]}.'
+                        print(f'\n{result}\n\n')
+                        interpretation.append(result)
+                        gc.append('True')
+                
+                elif ssr_ftest_pvalue > alpha and ssr_chi2test_pvalue > alpha and lrtest_pvalue > alpha and params_ftest_pvalue > alpha:
+                        result = f'{array[0]} does not Granger-causes {array[1]}.'
+                        print(f'\n{result}\n\n')
+                        interpretation.append(result)
+                        gc.append('False')
+
+                else:
+                        result = f'Inconsistent results among the tests.'
+                        print(f'\n{result}\n\n')
+                        interpretation.append(result)
+                        gc.append('Uncertain')
+
+        # Building dataframe with summary results
+        results_dict = {'y2':y2, 'y1':y1, 'Granger Causality':gc, 
+                        'Test Interpretation':interpretation,
+                        'SSR F-test p-values': ssr_ftest_pvalues,
+                        'SSR Chi2-test p-values':ssr_chi2test_pvalues,
+                        'LR-test p-values': lrtest_pvalues,
+                        'Params F-test p-values': params_ftest_pvalues
+                        }
+
+        summary = pd.DataFrame(results_dict)
+
+        return summary
 
 
 def calculate_scores(predictions: pd.DataFrame, actuals: pd.DataFrame) -> Tuple[List[float], List[float], List[float]]:
@@ -420,6 +539,7 @@ def optimize_prophet_model(time_series: pd.DataFrame, changepoint_prior_scale: L
         m.fit(time_series);        
 
         return m
+
 
 def optimize_var_model(p: List[int], time_series: pd.DataFrame) -> VAR:
         """
