@@ -319,3 +319,63 @@ def plot_predictions_from_regression_model(predictions: pd.DataFrame, time_serie
 
         plt.savefig(f'../reports/figures/fig_{plot_title}.png',  bbox_inches = 'tight')        
         plt.show()
+
+
+def plot_sales_forecast(time_series: pd.DataFrame, predictions: pd.DataFrame, chart_title: str) -> None:
+        """
+        Plots a time series and its forecast.
+
+        Parameters:
+        time_series (pandas.DataFrame): Historical time series data.
+        predictions (pandas.DataFrame): Forecasts for the time series.
+        chart_title (str): Title to be displayed on the chart.
+
+        Returns:
+        None
+        """
+
+         # Colors
+        time_series_color = sns.color_palette('Blues_r')[0]
+        pred_color = '#C70039'
+
+        # If predictions and time_series are DataFrames, select the first column
+        if isinstance(predictions, pd.DataFrame):
+                predictions = predictions.iloc[:, 0]
+        if isinstance(time_series, pd.DataFrame):
+                time_series = time_series.iloc[:, 0]
+        
+        # Adjusting plots continuity
+        last_value = time_series.iloc[-1]
+        last_index = time_series.index[-1]
+        last_observation = pd.Series(last_value, index=[last_index])
+        predictions = pd.concat([predictions,last_observation]).sort_index()
+
+        # Plots
+        fig, ax = plt.subplots(figsize=(8,5))
+        sns.lineplot(x=time_series.index, y=time_series.values, ax=ax, color=time_series_color, zorder=1)
+        sns.lineplot(x=predictions.index, y=predictions.values, ax=ax, color = pred_color, zorder=2)
+
+        # Adding shadow to predictions
+        first_pred_x = predictions.index[0]
+        last_pred_x = predictions.index[-1]
+        ax.axvspan(first_pred_x, last_pred_x, color='#808080', alpha=0.2)
+
+        # Labels
+        plt.title(chart_title)
+        plt.xlabel("Date")
+        plt.ylabel("Net Sales (mdp)")
+
+        # Adding legend to plot
+        legend_lines = [Line2D([0], [0], color=time_series_color, lw=2),
+                        Line2D([0], [0], color=pred_color, lw=2)]
+        plt.legend(legend_lines, ['Historical', 'Forecast'], loc='upper left', facecolor='white', frameon=True)
+
+        # Adjusting Y ticks to Currency format
+        ticks = ax.get_yticks()
+        new_labels = [f'${int(i):,.0f}' for i in ticks]
+        ax.set_yticklabels(new_labels)
+
+        plot_title = process_string(chart_title)
+
+        plt.savefig(f'../reports/figures/fig_{plot_title}.png',  bbox_inches = 'tight')
+        plt.show()
