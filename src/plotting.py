@@ -16,29 +16,31 @@ import seaborn as sns
 
 # Functions
 
-def process_string(str_in: str) -> str:
+def process_string(input_string: str) -> str:
     """
     Process an input string to conver it to lowercase, remove blank spaces and punctuation signs.
 
     Parameters:
-    str_in (str): Raw string.    
+    input_string (str): Raw string.    
 
     Returns:
-    str_out (str): Processed string.
+    output_string (str): Processed string.
     """
 
-    punctuation_dict = {'á': 'a',
-                        'é': 'e',
-                        'í': 'i',
-                        'ó': 'o',
-                        'ú': 'u',
-                        '^': '',
-                        '.': '',
-                        ' ': '_'}
+    char_dict = {'á': 'a',
+                'é': 'e',
+                'í': 'i',
+                'ó': 'o',
+                'ú': 'u',
+                '^': '',
+                '.': '',
+                ' ': '_'}
 
-    str_out = (str_in.lower().map(punctuation_dict))
+    translation_table = str.maketrans(char_dict)
 
-    return str_out
+    output_string = input_string.lower().translate(translation_table)
+
+    return output_string
 
 
 def plot_linechart(df: pd.DataFrame, is_saved: bool = True) -> None:
