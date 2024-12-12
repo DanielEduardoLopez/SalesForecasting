@@ -7,7 +7,7 @@
 
 <font size="-1"><a href="https://www.linkedin.com/in/daniel-eduardo-lopez">LinkedIn</a> | <a href="https://github.com/DanielEduardoLopez">GitHub </a></font>
 
-**11 Sep 2024**
+**2 Dec 2024**
 
 ____
 ### **Contents**
@@ -578,54 +578,7 @@ The dataset was split into a training and a testing sets, allocating 80% and 20%
 Then, the model was built as follows:
 
 ```python
-def ARMA_model(p, q, time_series):
-        """
-        Fits and optimize an autoregressive moving average (ARMA) model given a set of p and q values, minimizing 
-        the Akaike Information Criterion (AIC).
-
-        Parameters:
-        p (range): Range for order p in the autoregressive portion of the ARMA model.
-        q (range): Range for order q in the moving average portion of the ARMA model.
-        time_series (pandas.series): Time series data for fitting the ARMA model.
-
-        Returns:
-        ARMA_model (statsmodels.arima): An ARMA model object fitted according to the combination of p and q that minimizes 
-        the Akaike Information Criterion (AIC).
-        
-
-        """
-        # Obtaining the combinations of p and q
-        order_list = list(product(p, q))
-
-        # Creating emtpy lists to store results
-        order_results = []
-        aic_results = []
-
-        # Fitting models
-        for order in order_list:
-
-                ARMA_model = ARIMA(time_series, order = (order[0], 0, order[1])).fit()
-                order_results.append(order)
-                aic_results.append(ARMA_model.aic)
-        
-        # Converting lists to dataframes
-        results = pd.DataFrame({'(p,q)': order_results,
-                                'AIC': aic_results                                
-                                })        
-        # Storing results from the best model
-        lowest_aic = results.AIC.min()
-        best_model = results.loc[results['AIC'] == lowest_aic, ['(p,q)']].values[0][0]
-
-        # Printing results
-        print(f'The best model is (p = {best_model[0]}, q = {best_model[1]}), with an AIC of {lowest_aic:.02f}.\n')         
-        print(results)     
-
-        # Fitting best model again
-        ARMA_model = ARIMA(time_series, order = (best_model[0], 0, best_model[1])).fit()
-
-        return ARMA_model
-
-arma_model = ARMA_model(p=range(1,6), q=range(1,7), time_series=y_train)
+arma_model = optimize_arma_model(p=range(1,6), q=range(1,7), time_series=y_train)
 ```
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
@@ -702,55 +655,7 @@ The dataset was split into a training and a testing sets, allocating 80% and 20%
 Then, the model was built as follows:
 
 ```python
-def ARIMA_model(p, d, q, time_series):
-        """
-        Fits and optimize an autoregressive integrated moving average (ARIMA) model based on the Akaike 
-        Information Criterion (AIC), given a set of p and q values; while keeping the d order constant. 
-
-        Parameters:
-        p (range): Range for order p in the autoregressive portion of the ARIMA model.
-        d (int): Integration order.
-        q (range): Range for order q in the moving average portion of the ARIMA model.
-        time_series (pandas.series): Time series data for fitting the ARIMA model.
-
-        Returns:
-        ARIMA_model (statsmodels.arima): An ARIMA model object fitted according to the combination of p and q that minimizes 
-        the Akaike Information Criterion (AIC).
-        
-
-        """
-        # Obtaining the combinations of p and q
-        order_list = list(product(p, q))
-
-        # Creating emtpy lists to store results
-        order_results = []
-        aic_results = []
-
-        # Fitting models
-        for order in order_list:
-
-                ARIMA_model = ARIMA(time_series, order = (order[0], d, order[1])).fit()
-                order_results.append((order[0], d, order[1]))
-                aic_results.append(ARIMA_model.aic)
-        
-        # Converting lists to dataframes
-        results = pd.DataFrame({'(p,d,q)': order_results,
-                                'AIC': aic_results                                
-                                })        
-        # Storing results from the best model
-        lowest_aic = results.AIC.min()
-        best_model = results.loc[results['AIC'] == lowest_aic, ['(p,d,q)']].values[0][0]
-
-        # Printing results
-        print(f'The best model is (p = {best_model[0]}, d = {d}, q = {best_model[2]}), with an AIC of {lowest_aic:.02f}.\n')         
-        print(results)     
-
-        # Fitting best model again
-        ARIMA_model = ARIMA(time_series, order = (best_model[0], best_model[1], best_model[2])).fit()
-
-        return ARIMA_model
-
-arima_model = ARIMA_model(p=range(1,6), d=2, q=range(1,7), time_series=y_train)
+arima_model = optimize_arima_model(p=range(1,6), d=2, q=range(1,7), time_series=y_train)
 ```
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
@@ -830,73 +735,14 @@ The dataset was split into a training and a testing sets, allocating 80% and 20%
 Then, the model was built as follows:
 
 ```python
-def SARIMA_model(p, d, q, P, D, Q, m, time_series):
-        """
-        Fits and optimize a seasonal autoregressive integrated moving average (SARIMA) model based on the Akaike 
-        Information Criterion (AIC), given a set of p, q, P, and Q values; while keeping the d and D orders constant. 
-        The frequency m is also kept constant.        
-
-        Parameters:
-        p (range): Range for order p in the autoregressive portion of the SARIMA model.
-        d (int): Integration order.
-        q (range): Range for order q in the moving average portion of the SARIMA model.
-        P (range): Range for order P in the seasonal autoregressive portion of the SARIMA model.
-        D (int): Seasonal integration order.
-        Q (range): Range for order P in the seasonal moving average portion of the SARIMA model.
-        m (int): Number of observations per seasonal cycle.
-        time_series (pandas.series): Time series data for fitting the SARIMA model.
-
-        Returns:
-        SARIMA_model (statsmodels.sarimax): An SARIMAX model object fitted according to the combination of p, q, P, 
-        and Q values that minimizes the Akaike Information Criterion (AIC).
-        
-
-        """
-        # Obtaining the combinations of p and q
-        order_list = list(product(p, q, P, Q))
-
-        # Creating emtpy lists to store results
-        order_results = []
-        aic_results = []
-
-        # Fitting models
-        for order in order_list:
-
-                SARIMA_model = SARIMAX(endog=time_series, 
-                                       order = (order[0], d, order[1]),
-                                       seasonal_order=(order[2], D, order[3], m),
-                                       ).fit(disp=False)
-                order_results.append((order[0], d, order[1], order[2], D, order[3], m))
-                aic_results.append(SARIMA_model.aic)
-        
-        # Converting lists to dataframes
-        results = pd.DataFrame({'(p,d,q)(P,D,Q)m': order_results,
-                                'AIC': aic_results                                
-                                })        
-        # Storing results from the best model
-        lowest_aic = results.AIC.min()
-        best_model = results.loc[results['AIC'] == lowest_aic, ['(p,d,q)(P,D,Q)m']].values[0][0]
-
-        # Printing results
-        print(f'The best model is (p = {best_model[0]}, d = {d}, q = {best_model[2]})(P = {best_model[3]}, D = {D}, Q = {best_model[5]})(m = {m}), with an AIC of {lowest_aic:.02f}.\n')         
-        print(results)     
-
-        # Fitting best model again
-        SARIMA_model = SARIMAX(endog=time_series, 
-                                order = (best_model[0], d, best_model[2]),
-                                seasonal_order=(best_model[3], D, best_model[5], m),
-                                ).fit(disp=False)
-
-        return SARIMA_model
-
-sarima_model = SARIMA_model(p=range(1,4), 
-                            d=1, 
-                            q=range(1,4), 
-                            P=range(1,5), 
-                            D=1, 
-                            Q=range(1,5), 
-                            m=4, 
-                            time_series=y_train)
+sarima_model = optimize_sarima_model(p=range(1,4), 
+                                        d=1, 
+                                        q=range(1,4), 
+                                        P=range(1,5), 
+                                        D=1, 
+                                        Q=range(1,5), 
+                                        m=4, 
+                                        time_series=y_train)
 ```
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
@@ -975,77 +821,15 @@ The dataset was split into a training and a testing sets, allocating 80% and 20%
 Then, the model was built as follows:
 
 ```python
-def SARIMAX_model(p, d, q, P, D, Q, m, endog, exog):
-        """
-        Fits and optimize a seasonal autoregressive integrated moving average with exogeneous variables (SARIMAX) model 
-        based on the  Akaike Information Criterion (AIC), given a set of p, q, P, and Q values; while keeping the 
-        d and D orders constant. The frequency m is also kept constant.
-
-        Parameters:
-        p (range): Range for order p in the autoregressive portion of the SARIMA model.
-        d (int): Integration order.
-        q (range): Range for order q in the moving average portion of the SARIMA model.
-        P (range): Range for order P in the seasonal autoregressive portion of the SARIMA model.
-        D (int): Seasonal integration order.
-        Q (range): Range for order P in the seasonal moving average portion of the SARIMA model.
-        m (int): Number of observations per seasonal cycle.
-        endog (pandas.series): Time series of the endogenous variable for fitting the SARIMAX model.
-        exog (pandas.dataframe): Time series of the exogenous variables for fitting the SARIMAX model.
-
-        Returns:
-        SARIMAX_model (statsmodels.sarimax): An SARIMAX model object fitted according to the combination of p, q, P, 
-        and Q values that minimizes the Akaike Information Criterion (AIC).
-        
-
-        """
-        # Obtaining the combinations of p and q
-        order_list = list(product(p, q, P, Q))
-
-        # Creating emtpy lists to store results
-        order_results = []
-        aic_results = []
-
-        # Fitting models
-        for order in order_list:
-
-                SARIMAX_model = SARIMAX(endog=endog, 
-                                        exog=exog,
-                                       order = (order[0], d, order[1]),
-                                       seasonal_order=(order[2], D, order[3], m),
-                                       ).fit(disp=False)
-                order_results.append((order[0], d, order[1], order[2], D, order[3], m))
-                aic_results.append(SARIMAX_model.aic)
-        
-        # Converting lists to dataframes
-        results = pd.DataFrame({'(p,d,q)(P,D,Q)m': order_results,
-                                'AIC': aic_results                                
-                                })        
-        # Storing results from the best model
-        lowest_aic = results.AIC.min()
-        best_model = results.loc[results['AIC'] == lowest_aic, ['(p,d,q)(P,D,Q)m']].values[0][0]
-
-        # Printing results
-        print(f'The best model is (p = {best_model[0]}, d = {d}, q = {best_model[2]})(P = {best_model[3]}, D = {D}, Q = {best_model[5]})(m = {m}), with an AIC of {lowest_aic:.02f}.\n')         
-        print(results)     
-
-        # Fitting best model again
-        SARIMAX_model = SARIMAX(endog=endog, 
-                                exog=exog, 
-                                order = (best_model[0], d, best_model[2]),
-                                seasonal_order=(best_model[3], D, best_model[5], m),
-                                ).fit(disp=False)
-
-        return SARIMAX_model
-
-sarimax_model = SARIMAX_model(p=range(1,4), 
-                            d=1, 
-                            q=range(1,4), 
-                            P=range(1,2), 
-                            D=1, 
-                            Q=range(1,2), 
-                            m=4, 
-                            endog=y_train, 
-                            exog=exog_train)
+sarimax_model = optimize_sarimax_model(p=range(1,4), 
+                                        d=1, 
+                                        q=range(1,4), 
+                                        P=range(1,2), 
+                                        D=1, 
+                                        Q=range(1,2), 
+                                        m=4, 
+                                        endog=y_train, 
+                                        exog=exog_train)
 ```
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
@@ -1194,71 +978,12 @@ The dataset was split into a training and a testing sets, allocating 80% and 20%
 The model built with Prophet was optimized by using cross-validation and hyperparameter tuning. Specifically, the hypeparameters `changepoint_prior_scale` and `seasonality_prior_scale` were tunned.
 
 ```python
-def prophet_model(series, changepoint_prior_scale, seasonality_prior_scale, metric):
-        """
-        Fits and optimizr a univariate time series model with Prophet, given a set of changepoint_prior_scale and 
-        seasonality_prior_scale values.
-
-        Parameters:
-        changepoint_prior_scale (list): Values for the changepoint_prior_scale hyperparameter in Prophet.
-        seasonality_prior_scale (list): Values for the seasonality_prior_scale hyperparameter in Prophet.        
-        series (pandas.dataframe): Time series data in two columns: ds for dates in a date datatype, and y for the series.
-        metric (str): Selected performance metric for optimization: One of 'mse', 'rmse', 'mae', 'mdape', or 'coverage'.
-        
-        Returns:
-        m (prophet.prophet): An Prophet model object optimized according to the combination of tested hyperparameters, by using the 
-        indicated metric.
-        
-        """
-        # Obtaining the combinations of hyperparameters
-        params = list(product(changepoint_prior_scale, seasonality_prior_scale))
-
-        # Creating emtpy lists to store performance results        
-        metric_results = []
-
-        # Defining cutoff dates
-        start_cutoff_percentage = 0.5 # 50% of the data will be used for fitting the model
-        start_cutoff_index = int(round(len(series) * start_cutoff_percentage, 0))
-        start_cutoff = series.iloc[start_cutoff_index].values[0] 
-        end_cutoff = series.iloc[-4].values[0] # The last fourth value is taken as the series is reported in a quarterly basis
-
-        cutoffs = pd.date_range(start=start_cutoff, end=end_cutoff, freq='12M')
-
-        # Fitting models
-        for param in params:
-                m = Prophet(changepoint_prior_scale=param[0], seasonality_prior_scale=param[1])
-                m.add_country_holidays(country_name='MX')
-                m.fit(series)
-        
-                df_cv = cross_validation(model=m, horizon='365 days', cutoffs=cutoffs)
-                df_p = performance_metrics(df_cv, rolling_window=1)
-                metric_results.append(df_p[metric].values[0])
-
-        # Converting list to dataframe
-        results = pd.DataFrame({'Hyperparameters': params,
-                                'Metric': metric_results                                
-                                })     
-           
-        # Storing results from the best model
-        best_params = params[np.argmin(metric_results)]
-
-        # Printing results
-        print(f'\nThe best model hyperparameters are changepoint_prior_scale = {best_params[0]}, and seasonality_prior_scale = {best_params[1]}.\n')  
-        print(results)
-
-        # Fitting best model again
-        m = Prophet(changepoint_prior_scale=best_params[0], seasonality_prior_scale=best_params[1])
-        m.add_country_holidays(country_name='MX')
-        m.fit(series);        
-
-        return m
-
 # Defining hyperparameters values
 changepoint_prior_scale = [0.001, 0.01, 0.1, 0.5]
 seasonality_prior_scale = [0.01, 0.1, 1.0, 10.0]
 
 # Fitting model
-prophet_model = prophet_model(y_train, changepoint_prior_scale, seasonality_prior_scale, 'rmse')
+prophet_model = optimize_prophet_model(y_train, changepoint_prior_scale, seasonality_prior_scale, 'rmse')
 ```
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
@@ -1308,48 +1033,9 @@ The dataset was split into a training and a testing sets, allocating 80% and 20%
 Later, the VAR model was built using the class *VAR* from the **statsmodels** library.
 
 ```python
-def VAR_model(p, series):
-        """
-        Fits and optimizar VAR models using the method VAR from statsmodels given a set of lags, and returns the one
-        with the lowest Akaike Information Criterion (AIC).
-
-        Parameters:
-        p (list): Lag values.
-        series (pandas.dataframe): Time series data.
-
-        Returns:
-        model (statsmodels.var): VAR model object optimized according to the AIC criterion.
-
-        """
-
-        # Creating empty lists to store results
-
-        aic_results = []
-
-        for lag in p:
-                VAR_model = VAR(endog=series).fit(maxlags=lag)
-                aic_results.append(VAR_model.aic)
-        
-        # Converting lists to dataframes
-        results = pd.DataFrame({'(p)': p,
-                                'AIC': aic_results                                
-                                })        
-        # Storing results from the best model
-        lowest_aic = results.AIC.min()
-        best_model = results.loc[results['AIC'] == lowest_aic, ['(p)']].values[0][0]
-
-        # Printing results
-        print(f'The best model is (p = {best_model}), with an AIC of {lowest_aic:.02f}.\n')         
-        print(results)     
-
-        # Fitting best model again
-        VAR_model = VAR(endog=series).fit(maxlags=best_model)
-
-        return VAR_model
-
 p = list(range(1,6))
 
-var_model = VAR_model(p=p, series=X_train)
+var_model = optimize_var_model(p=p, series=X_train)
 
 ```
 
@@ -1453,58 +1139,10 @@ The dataset was split into a training and a testing sets, allocating 80% and 20%
 Later, the VARMA model was built as follows:
 
 ```python
-def VARMA_model(p, q, series):
-        """
-        Fits a series of VARMA models based on the combinations of p and q provided and 
-        returns the best performing model according to the Akaike Information Criterion (AIC).
-
-        Parameters:
-        p (list): Orders for the autoregressive process of the model.
-        q (list): Orders for the moving average process of the model.
-        series (pandas.dataframe): Data for the time series for fitting the model.
-
-        Returns:
-        model (statsmodels.varmax): A VARMA model object fitted according to the combination of p and q that minimizes 
-        the Akaike Information Criterion (AIC).
-
-        """
-        
-        # Obtaining the combinations of p and q
-        order_list = list(product(p, q))
-
-        # Creating emtpy lists to store results
-        order_results = []
-        aic_results = []
-
-        # Fitting models
-        for order in order_list:
-
-                model = VARMAX(endog=series, order=(order[0], order[1])).fit()
-                order_results.append(order)
-                aic_results.append(model.aic)
-        
-        # Converting lists to dataframes
-        results = pd.DataFrame({'(p,q)': order_results,
-                                'AIC': aic_results                                
-                                })        
-        
-        # Storing results from the best model
-        lowest_aic = results.AIC.min()
-        best_model = results.loc[results['AIC'] == lowest_aic, ['(p,q)']].values[0][0]
-
-        # Printing results
-        print(f'The best model is (p = {best_model[0]}, q = {best_model[1]}), with an AIC of {lowest_aic:.02f}.\n')         
-        print(results)     
-
-        # Fitting best model again
-        model = VARMAX(endog=series, order=(best_model[0], best_model[1])).fit()
-
-        return model
-
 p_list = [1,2,3,4]
 q_list = [1,2,3,4]
 
-varma_model = VARMA_model(p=p_list, q=q_list, series=X_train)
+varma_model = optimize_varma_model(p=p_list, q=q_list, series=X_train)
 
 ```
 
@@ -1610,32 +1248,7 @@ The dataset was split into a training and a testing sets, allocating 80% and 20%
 Later, the VARIMA model was built as follows:
 
 ```python
-def VARIMA_model(p, d, q, series):
-        """
-        Fits and optimize a VARIMA model based on the Akaike Information Criterion (AIC), given a set of p, d, and q values.
-
-        Parameters:
-        p (int): Order of the autoregressive process in the model.
-        d (int): Integration order in the model.
-        p (int): Order of the moving average process in the model.
-        series (pandas.dataframe): Data for the time series for fitting the model.
-
-        Returns:
-        model (darts.varima): A VARIMA object fitted according to the combination of p, d and q that minimizes 
-        the Akaike Information Criterion (AIC).
-
-
-        """
-        # Converting pandas.dataframe to Darts.TimeSeries
-        series = TimeSeries.from_dataframe(series)
-
-
-        model = VARIMA(p=p, d=d, q=q, trend="n") # No trend for models with integration
-        model.fit(series)
-
-        return model
-
-varima_model = VARIMA_model(p=1, d=1, q=1, series=X_train)
+varima_model = fit_varima_model(p=1, d=1, q=1, series=X_train)
 ```
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
@@ -1944,14 +1557,18 @@ ____
 
 File | Description
 :--- | :---
-SalesForecasting.ipynb | Jupyter notebook with the Python code
-SalesForecasting.html | HTML version of the Jupyter notebook
-Walmex_Quarterly_Net_Sales.xlsx | Walmex quarterly net sales
-app.py | Streamlit app
-bonds_rates_data.csv | Treasury bonds rates (CETES 28) data
-dataset_processed.csv | Complete processed dataset
-exchange_rates_data.csv | USD/MXN exchange rates data
-gdp_data.json | GDP dataset
-inflation_data.json | Mexico's inflation data
-interest_rates_data.csv | Mexico's representative interest rates (28 day TIIE)
+/data/raw/Walmex_Quarterly_Net_Sales.xlsx | Walmex quarterly net sales
+/data/raw/bonds_rates_data.csv | Treasury bonds rates (CETES 28) data
+/data/raw/exchange_rates_data.csv | USD/MXN exchange rates data
+/data/raw/gdp_data.json | GDP dataset
+/data/raw/inflation_data.json | Mexico's inflation data
+/data/raw/interest_rates_data.csv | Mexico's representative interest rates (28 day TIIE)
+/data/processed/dataset_processed.csv | Complete processed dataset
+/notebooks/SalesForecasting.ipynb | Jupyter notebook with the Python code
+/reports/SalesForecasting.html | HTML version of the Jupyter notebook
+/src/plotting.py | Module with functions for plotting
+/src/quality.py| Module with functions for assessing and improving data quality
+/src/time_series.py | Module with functions for time series analysis
+/streamlit_app/app.py | Streamlit app
 requirements.txt | Python requirements file
+
