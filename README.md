@@ -578,7 +578,7 @@ The dataset was split into a training and a testing sets, allocating 80% and 20%
 Then, the model was built as follows:
 
 ```python
-arma_model = optimize_arma_model(p=range(1,6), q=range(1,7), time_series=y_train)
+arma_model = time_series.optimize_arma_model(p=range(1,6), q=range(1,7), time_series=y_train)
 ```
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
@@ -655,7 +655,7 @@ The dataset was split into a training and a testing sets, allocating 80% and 20%
 Then, the model was built as follows:
 
 ```python
-arima_model = optimize_arima_model(p=range(1,6), d=2, q=range(1,7), time_series=y_train)
+arima_model = time_series.optimize_arima_model(p=range(1,6), d=2, q=range(1,7), time_series=y_train)
 ```
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
@@ -735,14 +735,14 @@ The dataset was split into a training and a testing sets, allocating 80% and 20%
 Then, the model was built as follows:
 
 ```python
-sarima_model = optimize_sarima_model(p=range(1,4), 
-                                        d=1, 
-                                        q=range(1,4), 
-                                        P=range(1,5), 
-                                        D=1, 
-                                        Q=range(1,5), 
-                                        m=4, 
-                                        time_series=y_train)
+sarima_model = time_series.optimize_sarima_model(p=range(1,4), 
+												d=1, 
+												q=range(1,4), 
+												P=range(1,5), 
+												D=1, 
+												Q=range(1,5), 
+												m=4, 
+												time_series=y_train)
 ```
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
@@ -821,15 +821,15 @@ The dataset was split into a training and a testing sets, allocating 80% and 20%
 Then, the model was built as follows:
 
 ```python
-sarimax_model = optimize_sarimax_model(p=range(1,4), 
-                                        d=1, 
-                                        q=range(1,4), 
-                                        P=range(1,2), 
-                                        D=1, 
-                                        Q=range(1,2), 
-                                        m=4, 
-                                        endog=y_train, 
-                                        exog=exog_train)
+sarimax_model = time_series.optimize_sarimax_model(p=range(1,4), 
+													d=1, 
+													q=range(1,4), 
+													P=range(1,2), 
+													D=1, 
+													Q=range(1,2), 
+													m=4, 
+													endog=y_train, 
+													exog=exog_train)
 ```
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
@@ -983,7 +983,7 @@ changepoint_prior_scale = [0.001, 0.01, 0.1, 0.5]
 seasonality_prior_scale = [0.01, 0.1, 1.0, 10.0]
 
 # Fitting model
-prophet_model = optimize_prophet_model(y_train, changepoint_prior_scale, seasonality_prior_scale, 'rmse')
+prophet_model = time_series.optimize_prophet_model(y_train, changepoint_prior_scale, seasonality_prior_scale, 'rmse')
 ```
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
@@ -1035,7 +1035,7 @@ Later, the VAR model was built using the class *VAR* from the **statsmodels** li
 ```python
 p = list(range(1,6))
 
-var_model = optimize_var_model(p=p, series=X_train)
+var_model = time_series.optimize_var_model(p=p, series=X_train)
 
 ```
 
@@ -1142,7 +1142,7 @@ Later, the VARMA model was built as follows:
 p_list = [1,2,3,4]
 q_list = [1,2,3,4]
 
-varma_model = optimize_varma_model(p=p_list, q=q_list, series=X_train)
+varma_model = time_series.optimize_varma_model(p=p_list, q=q_list, series=X_train)
 
 ```
 
@@ -1248,7 +1248,7 @@ The dataset was split into a training and a testing sets, allocating 80% and 20%
 Later, the VARIMA model was built as follows:
 
 ```python
-varima_model = fit_varima_model(p=1, d=1, q=1, series=X_train)
+varima_model = time_series.fit_varima_model(p=1, d=1, q=1, series=X_train)
 ```
 
 Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecasting/blob/35a592125ea91b0df1a0b61feb57d199478443e5/SalesForecasting.ipynb">notebook</a> for the full details.
@@ -1340,7 +1340,7 @@ After modeling, it was observed that the feature **Units** was the most importan
 Later, the predictions were plot against the historical net sales data to visually assess the performance of the RF model.
 
 <p align="center">
-	<img src="reports/figures/fig_predictions_from_rf_model_vs._walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_rf_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 From the plot above, it can be seen that the predictions are very close of the historical time series. Thus, the Random Forest regression model was able to capture the most important features for predicting the net sales of WALMEX. 
@@ -1389,7 +1389,7 @@ Please refer to the <a href="https://github.com/DanielEduardoLopez/SalesForecast
 Later, the predictions were plot against the historical net sales data to visually assess the performance of the SVR model.
 
 <p align="center">
-	<img src="reports/figures/fig_predictions_from_svr_model_vs._walmex_historical_net_sales.png?raw=true" width=70% height=60%>
+	<img src="reports/figures/fig_predictions_from_svr_model_vs_walmex_historical_net_sales.png?raw=true" width=70% height=60%>
 </p>
 
 From the plot above, it can be seen that the predictions are close of the historical time series. Thus, the SVR model was able to capture the most important features for predicting the net sales of WALMEX. 
